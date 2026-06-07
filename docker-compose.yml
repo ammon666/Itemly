@@ -1,0 +1,33 @@
+# Itemly Docker Compose Configuration
+# 轻量化物品管理系统
+
+version: '3.8'
+
+services:
+  itemly:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: itemly
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_SECRET=itemly-production-secret-key-change-me
+      - FLASK_DEBUG=false
+      - PORT=5000
+    volumes:
+      - itemly_data:/app/uploads
+      - itemly_db:/app
+    networks:
+      - itemly_network
+
+volumes:
+  itemly_data:
+    driver: local
+  itemly_db:
+    driver: local
+
+networks:
+  itemly_network:
+    driver: bridge

@@ -1,0 +1,2135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Itemly - 轻量化物品管理系统">
+    <meta name="theme-color" content="#0d6efd">
+    <title>Itemly - 物品管理</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --bg-color: #f8f9fa;
+            --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --transition-speed: 0.2s;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 登录页面样式 */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo i {
+            font-size: 4rem;
+            color: var(--primary-color);
+        }
+
+        .login-logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-top: 0.5rem;
+        }
+
+        /* 主应用容器 */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app-container.active {
+            display: block;
+        }
+
+        /* 顶部导航 */
+        .app-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--card-shadow);
+        }
+
+        .app-header .navbar-brand {
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .app-header .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            transition: color var(--transition-speed);
+        }
+
+        .app-header .nav-link:hover {
+            color: white;
+        }
+
+        .app-header .nav-link.active {
+            color: white;
+        }
+
+        /* 侧边栏（桌面端） */
+        @media (min-width: 768px) {
+            .app-sidebar {
+                position: fixed;
+                left: 0;
+                top: 56px;
+                width: 240px;
+                height: calc(100vh - 56px);
+                background: white;
+                border-right: 1px solid #dee2e6;
+                overflow-y: auto;
+                padding: 1rem 0;
+            }
+
+            .app-main {
+                margin-left: 240px;
+                padding-top: 56px;
+                min-height: 100vh;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .app-sidebar {
+                display: none;
+            }
+
+            .app-main {
+                padding-top: 56px;
+                padding-bottom: 80px;
+            }
+
+            .offcanvas {
+                width: 280px !important;
+            }
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-item:hover {
+            background: var(--bg-color);
+        }
+
+        .sidebar-menu-item.active {
+            background: #e7f1ff;
+            border-left-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu-item i {
+            width: 24px;
+            margin-right: 0.5rem;
+        }
+
+        /* 内容区域 */
+        .app-content {
+            padding: 1rem;
+        }
+
+        /* 统计卡片 */
+        .stats-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .stats-card .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stats-card .stats-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        /* 物品卡片网格 */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            padding: 0.5rem;
+        }
+
+        @media (min-width: 576px) {
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background: #e9ecef;
+        }
+
+        .item-card-body {
+            padding: 0.75rem;
+        }
+
+        .item-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-card-category {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .item-card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .item-tag {
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            background: #e9ecef;
+            border-radius: 0.25rem;
+            color: #495057;
+        }
+
+        /* 悬浮添加按钮 */
+        .fab-button {
+            position: fixed;
+            bottom: 6rem;
+            right: 1rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.4);
+            font-size: 1.5rem;
+            z-index: 999;
+            transition: transform var(--transition-speed);
+        }
+
+        .fab-button:hover {
+            transform: scale(1.1);
+            color: white;
+        }
+
+        @media (min-width: 768px) {
+            .fab-button {
+                bottom: 2rem;
+                right: 2rem;
+            }
+        }
+
+        /* 模态框样式 */
+        .modal-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        /* 表单样式 */
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        /* 图片上传区域 */
+        .image-upload-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            background: #f8f9fa;
+        }
+
+        .image-upload-zone:hover {
+            border-color: var(--primary-color);
+            background: #e7f1ff;
+        }
+
+        .image-upload-zone.has-image {
+            padding: 0;
+            border-style: solid;
+        }
+
+        .image-upload-zone img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 0.5rem;
+        }
+
+        /* 树形选择器 */
+        .tree-selector {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .tree-item {
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+
+        .tree-item:hover {
+            background: var(--bg-color);
+        }
+
+        .tree-item.selected {
+            background: #e7f1ff;
+            color: var(--primary-color);
+        }
+
+        .tree-children {
+            padding-left: 1.5rem;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* 加载状态 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        /* 复选框样式 */
+        .item-checkbox {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        .item-card:hover .item-checkbox,
+        .edit-mode .item-checkbox {
+            opacity: 1;
+        }
+
+        /* Toast 提示 */
+        .toast-container {
+            position: fixed;
+            top: 70px;
+            right: 1rem;
+            z-index: 9999;
+        }
+
+        /* 多选标签 */
+        .tag-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .tag-selector-item {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            background: #e9ecef;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .tag-selector-item:hover {
+            background: #dee2e6;
+        }
+
+        .tag-selector-item.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tag-selector-item i {
+            margin-right: 0.25rem;
+        }
+
+        /* 页面标题 */
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* 后台管理样式 */
+        .admin-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--card-shadow);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        /* 列表样式 */
+        .list-group-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* 批量操作栏 */
+        .batch-actions {
+            position: fixed;
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #343a40;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 2rem;
+            display: none;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+            z-index: 998;
+        }
+
+        .batch-actions.show {
+            display: flex;
+        }
+
+        .batch-actions button {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .batch-actions button:hover {
+            text-decoration: underline;
+        }
+
+        /* 图片预览 */
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .image-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .image-preview-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <div class="login-logo">
+                <i class="bi bi-box-seam"></i>
+                <h1>Itemly</h1>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">登 录</button>
+            </form>
+            <div class="mt-3 text-center text-muted">
+                <small>默认账号: admin / admin123</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用 -->
+    <div id="appContainer" class="app-container">
+        <!-- 顶部导航 -->
+        <nav class="app-header navbar">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-box-seam"></i> Itemly
+                </a>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-link nav-link" onclick="showStatsModal()">
+                        <i class="bi bi-pie-chart"></i>
+                    </button>
+                    <button class="btn btn-link nav-link" onclick="logout()">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 侧边栏 -->
+        <nav class="app-sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item active" data-page="home" onclick="navigateTo('home')">
+                    <i class="bi bi-house"></i> 首页
+                </li>
+                <li class="sidebar-menu-item" data-page="items" onclick="navigateTo('items')">
+                    <i class="bi bi-box"></i> 物品管理
+                </li>
+                <li class="sidebar-menu-item" data-page="categories" onclick="navigateTo('categories')">
+                    <i class="bi bi-folder"></i> 类别管理
+                </li>
+                <li class="sidebar-menu-item" data-page="tags" onclick="navigateTo('tags')">
+                    <i class="bi bi-tags"></i> 标签管理
+                </li>
+                <li class="sidebar-menu-item" data-page="templates" onclick="navigateTo('templates')">
+                    <i class="bi bi-file-text"></i> 模板管理
+                </li>
+                <li class="sidebar-menu-item" data-page="settings" onclick="navigateTo('settings')">
+                    <i class="bi bi-gear"></i> 设置
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="app-main">
+            <!-- 首页 -->
+            <div id="pageHome" class="app-content page">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">物品列表</h5>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm me-2" onclick="toggleEditMode()">
+                            <i class="bi bi-pencil-square"></i> 编辑
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas" href="#filterOffcanvas">
+                            <i class="bi bi-funnel"></i> 筛选
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 搜索框 -->
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchInput" placeholder="搜索物品...">
+                    <button class="btn btn-primary" onclick="searchItems()">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+
+                <!-- 物品网格 -->
+                <div id="itemsGrid" class="items-grid">
+                    <!-- 动态生成 -->
+                </div>
+
+                <!-- 空状态 -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="bi bi-box"></i>
+                    <h5>暂无物品</h5>
+                    <p>点击下方按钮添加第一个物品</p>
+                </div>
+            </div>
+
+            <!-- 物品管理页面 -->
+            <div id="pageItems" class="app-content page" style="display: none;">
+                <div class="page-title">
+                    <span>物品管理</span>
+                </div>
+                <div id="itemsManagementList">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 类别管理页面 -->
+            <div id="pageCategories" class="app-content page" style="display: none;">
+                <div class="page-title">
+                    <span>类别管理</span>
+                    <button class="btn btn-primary btn-sm" onclick="showCategoryModal()">
+                        <i class="bi bi-plus"></i> 添加类别
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div id="categoryTree" class="tree-selector">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 标签管理页面 -->
+            <div id="pageTags" class="app-content page" style="display: none;">
+                <div class="page-title">
+                    <span>标签管理</span>
+                    <button class="btn btn-primary btn-sm" onclick="showTagModal()">
+                        <i class="bi bi-plus"></i> 添加标签
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div id="tagTree" class="tree-selector">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模板管理页面 -->
+            <div id="pageTemplates" class="app-content page" style="display: none;">
+                <div class="page-title">
+                    <span>模板管理</span>
+                    <button class="btn btn-primary btn-sm" onclick="showTemplateModal()">
+                        <i class="bi bi-plus"></i> 添加模板
+                    </button>
+                </div>
+                <div id="templateList">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 设置页面 -->
+            <div id="pageSettings" class="app-content page" style="display: none;">
+                <div class="page-title">
+                    <span>设置</span>
+                </div>
+                <div class="admin-card">
+                    <div class="admin-card-title">修改密码</div>
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <label class="form-label">原密码</label>
+                            <input type="password" class="form-control" name="old_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">新密码</label>
+                            <input type="password" class="form-control" name="new_password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </form>
+                </div>
+                <div class="admin-card">
+                    <div class="admin-card-title">个人信息</div>
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label">显示名称</label>
+                            <input type="text" class="form-control" name="display_name" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <!-- 悬浮添加按钮 -->
+        <button class="fab-button" onclick="showAddItemModal()">
+            <i class="bi bi-plus"></i>
+        </button>
+
+        <!-- 批量操作栏 -->
+        <div id="batchActions" class="batch-actions">
+            <span id="selectedCount">已选择 0 项</span>
+            <button onclick="batchDeleteItems()"><i class="bi bi-trash"></i> 删除</button>
+            <button onclick="batchUpdateCategory()"><i class="bi bi-folder"></i> 移动</button>
+            <button onclick="toggleEditMode()"><i class="bi bi-x"></i> 取消</button>
+        </div>
+    </div>
+
+    <!-- 筛选侧边栏 -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvas">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">筛选</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="mb-3">
+                <label class="form-label">类别</label>
+                <div id="filterCategories" class="tag-selector">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">标签</label>
+                <div id="filterTags" class="tag-selector">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <button class="btn btn-primary w-100 mb-2" onclick="applyFilters()">应用筛选</button>
+            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">清空筛选</button>
+        </div>
+    </div>
+
+    <!-- 添加/编辑物品模态框 -->
+    <div class="modal fade" id="itemModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemModalTitle">添加物品</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="itemForm">
+                    <div class="modal-body">
+                        <!-- 图片上传 -->
+                        <div class="mb-3">
+                            <label class="form-label">图片 <span class="text-danger">*</span></label>
+                            <div id="imageUploadZone" class="image-upload-zone" onclick="document.getElementById('imageInput').click()">
+                                <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: #6c757d;"></i>
+                                <p class="text-muted mb-0">点击上传图片</p>
+                            </div>
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">名称 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">类别 <span class="text-danger">*</span></label>
+                                <select class="form-select" name="category_id" id="itemCategorySelect" required>
+                                    <option value="">请选择类别</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">标签</label>
+                            <div id="itemTagsSelector" class="tag-selector">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">备注</label>
+                            <textarea class="form-control" name="remark" rows="2"></textarea>
+                        </div>
+
+                        <!-- 模板字段动态生成区域 -->
+                        <div id="templateFieldsArea"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 物品详情模态框 -->
+    <div class="modal fade" id="itemDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemDetailTitle">物品详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="itemDetailBody">
+                    <!-- 动态生成 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger me-auto" onclick="deleteCurrentItem()">
+                        <i class="bi bi-trash"></i> 删除
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="editCurrentItem()">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 类别模态框 -->
+    <div class="modal fade" id="categoryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="categoryModalTitle">添加类别</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="categoryForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="id">
+                        <div class="mb-3">
+                            <label class="form-label">名称</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">上级类别</label>
+                            <select class="form-select" name="parent_id" id="categoryParentSelect">
+                                <option value="">无（顶级类别）</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 标签模态框 -->
+    <div class="modal fade" id="tagModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tagModalTitle">添加标签</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="tagForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="id">
+                        <div class="mb-3">
+                            <label class="form-label">名称</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">上级标签</label>
+                            <select class="form-select" name="parent_id" id="tagParentSelect">
+                                <option value="">无（顶级标签）</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模板模态框 -->
+    <div class="modal fade" id="templateModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="templateModalTitle">添加模板</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="templateForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">模板名称</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">绑定类别 <span class="text-danger">*</span></label>
+                                <select class="form-select" name="category_id" id="templateCategorySelect" required>
+                                    <option value="">请选择类别</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">自定义字段</label>
+                            <div id="templateFieldsList" class="border rounded p-2">
+                                <!-- 动态生成 -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addTemplateField()">
+                                <i class="bi bi-plus"></i> 添加字段
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计模态框 -->
+    <div class="modal fade" id="statsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">统计信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="statsModalBody">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">加载中...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 图片压缩库 -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
+    <script>
+        // API基础路径
+        const API_BASE = '/api';
+
+        // 全局状态
+        let currentUser = null;
+        let categories = [];
+        let tags = [];
+        let templates = [];
+        let items = [];
+        let selectedItems = new Set();
+        let editMode = false;
+        let currentItemId = null;
+        let currentCategoryFilter = null;
+        let currentTagFilter = null;
+        let currentItemImages = [];
+
+        // 工具函数
+        async function api(endpoint, options = {}) {
+            const config = {
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                ...options
+            };
+            if (config.body && typeof config.body === 'object') {
+                config.body = JSON.stringify(config.body);
+            }
+            const response = await fetch(API_BASE + endpoint, config);
+            const data = await response.json();
+            if (!response.ok && response.status === 401) {
+                showLogin();
+            }
+            return data;
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const id = 'toast-' + Date.now();
+            const bgClass = {
+                success: 'bg-success',
+                error: 'bg-danger',
+                warning: 'bg-warning',
+                info: 'bg-info'
+            }[type] || 'bg-info';
+
+            container.innerHTML = `
+                <div id="${id}" class="toast" role="alert">
+                    <div class="toast-body text-white ${bgClass}">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            const toast = new bootstrap.Toast(document.getElementById(id), { delay: 3000 });
+            toast.show();
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // 认证相关
+        async function checkAuth() {
+            const result = await api('/auth/check');
+            if (result.authenticated) {
+                currentUser = result.data;
+                showApp();
+                loadAllData();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('appContainer').classList.remove('active');
+        }
+
+        function showApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            showLoading();
+            const result = await api('/auth/login', {
+                method: 'POST',
+                body: { username, password }
+            });
+            hideLoading();
+
+            if (result.success) {
+                currentUser = result.data;
+                showApp();
+                loadAllData();
+                document.getElementById('loginForm').reset();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        async function logout() {
+            await api('/auth/logout', { method: 'POST' });
+            currentUser = null;
+            showLogin();
+        }
+
+        // 数据加载
+        async function loadAllData() {
+            showLoading();
+            await Promise.all([
+                loadCategories(),
+                loadTags(),
+                loadTemplates(),
+                loadItems()
+            ]);
+            hideLoading();
+        }
+
+        async function loadCategories() {
+            const result = await api('/categories?tree=true');
+            if (result.success) {
+                categories = result.data;
+                renderCategorySelectors();
+            }
+        }
+
+        async function loadTags() {
+            const result = await api('/tags?tree=true');
+            if (result.success) {
+                tags = result.data;
+                renderTagSelectors();
+            }
+        }
+
+        async function loadTemplates() {
+            const result = await api('/templates?with_fields=true');
+            if (result.success) {
+                templates = result.data;
+                renderTemplateSelectors();
+            }
+        }
+
+        async function loadItems() {
+            const params = new URLSearchParams();
+            if (currentCategoryFilter) params.append('category_id', currentCategoryFilter);
+            if (currentTagFilter) params.append('tag_id', currentTagFilter);
+
+            const result = await api('/items?' + params.toString());
+            if (result.success) {
+                items = result.data;
+                renderItems();
+            }
+        }
+
+        // 渲染函数
+        function renderCategorySelectors() {
+            const categoryOptions = getFlatCategories().map(c =>
+                `<option value="${c.id}">${'─'.repeat(c.level)}${c.name}</option>`
+            ).join('');
+
+            document.getElementById('itemCategorySelect').innerHTML =
+                '<option value="">请选择类别</option>' + categoryOptions;
+            document.getElementById('categoryParentSelect').innerHTML =
+                '<option value="">无（顶级类别）</option>' + categoryOptions;
+            document.getElementById('templateCategorySelect').innerHTML =
+                '<option value="">不绑定</option>' + categoryOptions;
+
+            // 筛选器中的类别
+            document.getElementById('filterCategories').innerHTML =
+                getFlatCategories().map(c =>
+                    `<div class="tag-selector-item ${currentCategoryFilter == c.id ? 'selected' : ''}"
+                         onclick="toggleCategoryFilter(${c.id})">
+                        ${'─'.repeat(c.level)}${c.name}
+                    </div>`
+                ).join('');
+        }
+
+        function renderTagSelectors() {
+            const tagOptions = getFlatTags().map(t =>
+                `<div class="tag-selector-item" data-id="${t.id}">
+                    <i class="bi bi-tag"></i>${'─'.repeat(t.level)}${t.name}
+                </div>`
+            ).join('');
+
+            document.getElementById('itemTagsSelector').innerHTML = tagOptions;
+            document.getElementById('itemTagsSelector').querySelectorAll('.tag-selector-item').forEach(el => {
+                el.onclick = () => el.classList.toggle('selected');
+            });
+
+            // 筛选器中的标签
+            document.getElementById('filterTags').innerHTML =
+                getFlatTags().map(t =>
+                    `<div class="tag-selector-item ${currentTagFilter == t.id ? 'selected' : ''}"
+                         onclick="toggleTagFilter(${t.id})">
+                        ${'─'.repeat(t.level)}${t.name}
+                    </div>`
+                ).join('');
+        }
+
+        function renderTemplateSelectors() {
+            // 模板选择器可选
+        }
+
+        function getFlatCategories(cats = categories, level = 0) {
+            let flat = [];
+            cats.forEach(c => {
+                flat.push({ ...c, level });
+                if (c.children && c.children.length) {
+                    flat = flat.concat(getFlatCategories(c.children, level + 1));
+                }
+            });
+            return flat;
+        }
+
+        function getFlatTags(tgs = tags, level = 0) {
+            let flat = [];
+            tgs.forEach(t => {
+                flat.push({ ...t, level });
+                if (t.children && t.children.length) {
+                    flat = flat.concat(getFlatTags(t.children, level + 1));
+                }
+            });
+            return flat;
+        }
+
+        function renderItems() {
+            const grid = document.getElementById('itemsGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (items.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            grid.innerHTML = items.map(item => `
+                <div class="item-card fade-in ${editMode ? 'edit-mode' : ''}"
+                     onclick="${editMode ? `toggleItemSelection(${item.id})` : `showItemDetail(${item.id})`}">
+                    ${editMode ? `
+                        <input type="checkbox" class="item-checkbox"
+                               ${selectedItems.has(item.id) ? 'checked' : ''}
+                               onclick="event.stopPropagation(); toggleItemSelection(${item.id})">
+                    ` : ''}
+                    <img src="/uploads/${item.images}" class="item-card-img"
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e9ecef%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-size=%2212%22>无图片</text></svg>'"
+                         alt="${item.name}">
+                    <div class="item-card-body">
+                        <div class="item-card-title">${item.name}</div>
+                        <div class="item-card-category">${item.category_name || '未分类'}</div>
+                        ${item.tags && item.tags.length ? `
+                            <div class="item-card-tags">
+                                ${item.tags.slice(0, 2).map(t => `<span class="item-tag">${t.name}</span>`).join('')}
+                                ${item.tags.length > 2 ? `<span class="item-tag">+${item.tags.length - 2}</span>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            updateBatchActions();
+        }
+
+        function renderCategoryTree(containerId, data = categories, onAction) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = data.map(item => `
+                <div class="tree-item-wrapper">
+                    <div class="d-flex justify-content-between align-items-center tree-item">
+                        <span>${item.name}</span>
+                        <div class="list-item-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="${onAction}(${item.id}, 'edit')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="${onAction}(${item.id}, 'delete')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ${item.children && item.children.length ? `
+                        <div class="tree-children">
+                            ${renderSubTree(item.children, onAction)}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderSubTree(children, onAction) {
+            return children.map(item => `
+                <div class="tree-item-wrapper">
+                    <div class="d-flex justify-content-between align-items-center tree-item">
+                        <span>${item.name}</span>
+                        <div class="list-item-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="${onAction}(${item.id}, 'edit')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="${onAction}(${item.id}, 'delete')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ${item.children && item.children.length ? `
+                        <div class="tree-children">
+                            ${renderSubTree(item.children, onAction)}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderTemplates() {
+            const list = document.getElementById('templateList');
+            if (templates.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="bi bi-file-text"></i><p>暂无模板</p></div>';
+                return;
+            }
+
+            list.innerHTML = templates.map(t => `
+                <div class="admin-card fade-in">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${t.name}</strong>
+                            ${t.category_name ? `<span class="text-muted ms-2">${t.category_name}</span>` : ''}
+                        </div>
+                        <div class="list-item-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editTemplate(${t.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTemplate(${t.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ${t.fields && t.fields.length ? `
+                        <div class="mt-2 text-muted small">
+                            字段: ${t.fields.map(f => f.field_name).join(', ')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderItemsManagement() {
+            const list = document.getElementById('itemsManagementList');
+            if (items.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="bi bi-box"></i><p>暂无物品</p></div>';
+                return;
+            }
+
+            list.innerHTML = `
+                <div class="admin-card">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>类别</th>
+                                <th>标签</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                                <tr>
+                                    <td>
+                                        <img src="/uploads/${item.images}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"
+                                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23e9ecef%22 width=%2240%22 height=%2240%22/></svg>'">
+                                        <span class="ms-2">${item.name}</span>
+                                    </td>
+                                    <td>${item.category_name || '-'}</td>
+                                    <td>${item.tags ? item.tags.map(t => t.name).join(', ') : '-'}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editItem(${item.id})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteItem(${item.id})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 导航
+        function navigateTo(page) {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.sidebar-menu-item').forEach(m => m.classList.remove('active'));
+
+            const pageEl = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+            if (pageEl) {
+                pageEl.style.display = 'block';
+            }
+
+            const menuItem = document.querySelector(`.sidebar-menu-item[data-page="${page}"]`);
+            if (menuItem) {
+                menuItem.classList.add('active');
+            }
+
+            // 页面特定渲染
+            if (page === 'categories') {
+                renderCategoryTree('categoryTree', categories, 'handleCategoryAction');
+            } else if (page === 'tags') {
+                renderCategoryTree('tagTree', tags, 'handleTagAction');
+            } else if (page === 'templates') {
+                renderTemplates();
+            } else if (page === 'items') {
+                renderItemsManagement();
+            }
+        }
+
+        // 物品操作
+        function showAddItemModal(templateId = null) {
+            currentItemId = null;
+            currentItemImages = [];
+            document.getElementById('itemModalTitle').textContent = '添加物品';
+            document.getElementById('itemForm').reset();
+            document.getElementById('imageUploadZone').innerHTML = `
+                <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: #6c757d;"></i>
+                <p class="text-muted mb-0">点击上传图片</p>
+            `;
+            document.getElementById('imageUploadZone').classList.remove('has-image');
+            document.getElementById('templateFieldsArea').innerHTML = '';
+
+            // 清除标签选中状态
+            document.querySelectorAll('#itemTagsSelector .tag-selector-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 如果选择了模板，加载模板字段
+            if (templateId) {
+                const template = templates.find(t => t.id === templateId);
+                if (template && template.fields) {
+                    renderTemplateFields(template.fields);
+                }
+            }
+
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+
+        async function editItem(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            currentItemId = itemId;
+            currentItemImages = item.images ? [item.images] : [];
+
+            document.getElementById('itemModalTitle').textContent = '编辑物品';
+            document.getElementById('itemForm').reset();
+
+            // 填充表单
+            document.getElementById('itemForm').querySelector('[name="name"]').value = item.name;
+            document.getElementById('itemForm').querySelector('[name="category_id"]').value = item.category_id || '';
+            document.getElementById('itemForm').querySelector('[name="remark"]').value = item.remark || '';
+
+            // 显示图片
+            if (item.images) {
+                document.getElementById('imageUploadZone').innerHTML = `<img src="/uploads/${item.images}" alt="物品图片">`;
+                document.getElementById('imageUploadZone').classList.add('has-image');
+            }
+
+            // 选中标签
+            document.querySelectorAll('#itemTagsSelector .tag-selector-item').forEach(el => {
+                const id = parseInt(el.dataset.id);
+                el.classList.toggle('selected', item.tags && item.tags.some(t => t.id === id));
+            });
+
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+
+        async function saveItem(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            const name = formData.get('name');
+            const category_id = formData.get('category_id') || null;
+            const remark = formData.get('remark');
+            const images = currentItemImages[0] || '';
+
+            if (!images) {
+                showToast('请上传物品图片', 'error');
+                return;
+            }
+
+            // 获取选中的标签
+            const selectedTags = [];
+            document.querySelectorAll('#itemTagsSelector .tag-selector-item.selected').forEach(el => {
+                selectedTags.push(parseInt(el.dataset.id));
+            });
+
+            // 获取模板字段值
+            const fieldValues = {};
+            document.querySelectorAll('#templateFieldsArea [data-field-id]').forEach(el => {
+                fieldValues[el.dataset.fieldId] = el.value;
+            });
+
+            showLoading();
+            let result;
+            if (currentItemId) {
+                result = await api(`/items/${currentItemId}`, {
+                    method: 'PUT',
+                    body: { name, category_id, remark, images, tag_ids: selectedTags, field_values: fieldValues }
+                });
+            } else {
+                result = await api('/items', {
+                    method: 'POST',
+                    body: { name, category_id, remark, images, tag_ids: selectedTags, field_values: fieldValues }
+                });
+            }
+            hideLoading();
+
+            if (result.success) {
+                showToast(currentItemId ? '物品更新成功' : '物品创建成功', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+                loadItems();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        function showItemDetail(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            currentItemId = itemId;
+            document.getElementById('itemDetailTitle').textContent = item.name;
+            document.getElementById('itemDetailBody').innerHTML = `
+                <img src="/uploads/${item.images}" class="img-fluid rounded mb-3"
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e9ecef%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-size=%2212%22>无图片</text></svg>'">
+                <p><strong>类别：</strong>${item.category_name || '未分类'}</p>
+                ${item.tags && item.tags.length ? `<p><strong>标签：</strong>${item.tags.map(t => t.name).join(', ')}</p>` : ''}
+                ${item.remark ? `<p><strong>备注：</strong>${item.remark}</p>` : ''}
+                <p class="text-muted small">创建时间：${new Date(item.created_at).toLocaleString()}</p>
+            `;
+
+            new bootstrap.Modal(document.getElementById('itemDetailModal')).show();
+        }
+
+        function editCurrentItem() {
+            bootstrap.Modal.getInstance(document.getElementById('itemDetailModal')).hide();
+            editItem(currentItemId);
+        }
+
+        async function deleteCurrentItem() {
+            if (!confirm('确定要删除这个物品吗？')) return;
+
+            showLoading();
+            const result = await api(`/items/${currentItemId}`, { method: 'DELETE' });
+            hideLoading();
+
+            if (result.success) {
+                showToast('物品已删除', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('itemDetailModal')).hide();
+                loadItems();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        async function confirmDeleteItem(itemId) {
+            if (!confirm('确定要删除这个物品吗？')) return;
+
+            showLoading();
+            const result = await api(`/items/${itemId}`, { method: 'DELETE' });
+            hideLoading();
+
+            if (result.success) {
+                showToast('物品已删除', 'success');
+                loadItems();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        // 图片处理
+        async function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                // 压缩图片
+                const compressedFile = await imageCompression(file, {
+                    maxSizeMB: 1,
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: true
+                });
+
+                // 转换为base64
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64 = e.target.result;
+
+                    // 上传到服务器
+                    showLoading();
+                    const result = await api('/upload', {
+                        method: 'POST',
+                        body: { image: base64 }
+                    });
+                    hideLoading();
+
+                    if (result.success) {
+                        currentItemImages = [result.data.filename];
+                        document.getElementById('imageUploadZone').innerHTML = `<img src="/uploads/${result.data.filename}" alt="预览图">`;
+                        document.getElementById('imageUploadZone').classList.add('has-image');
+                    } else {
+                        showToast('图片上传失败', 'error');
+                    }
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
+                console.error('图片处理失败:', error);
+                showToast('图片处理失败', 'error');
+            }
+        }
+
+        // 模板字段渲染
+        function renderTemplateFields(fields) {
+            const container = document.getElementById('templateFieldsArea');
+            container.innerHTML = fields.map(f => `
+                <div class="mb-3">
+                    <label class="form-label">${f.field_name}</label>
+                    <input type="${f.field_type === 'number' ? 'number' : 'text'}"
+                           class="form-control"
+                           data-field-id="${f.id}"
+                           placeholder="请输入${f.field_name}">
+                </div>
+            `).join('');
+        }
+
+        // 编辑模式
+        function toggleEditMode() {
+            editMode = !editMode;
+            selectedItems.clear();
+            renderItems();
+            document.getElementById('batchActions').classList.toggle('show', editMode);
+        }
+
+        function toggleItemSelection(itemId) {
+            if (selectedItems.has(itemId)) {
+                selectedItems.delete(itemId);
+            } else {
+                selectedItems.add(itemId);
+            }
+            renderItems();
+        }
+
+        function updateBatchActions() {
+            document.getElementById('selectedCount').textContent = `已选择 ${selectedItems.size} 项`;
+        }
+
+        async function batchDeleteItems() {
+            if (selectedItems.size === 0) return;
+            if (!confirm(`确定要删除选中的 ${selectedItems.size} 个物品吗？`)) return;
+
+            showLoading();
+            const result = await api('/items/batch-delete', {
+                method: 'POST',
+                body: { item_ids: Array.from(selectedItems) }
+            });
+            hideLoading();
+
+            if (result.success) {
+                showToast(result.message, 'success');
+                toggleEditMode();
+                loadItems();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        async function batchUpdateCategory() {
+            if (selectedItems.size === 0) return;
+
+            const categoryId = prompt('请输入新的类别ID（数字），留空则移除类别：');
+            if (categoryId === null) return;
+
+            showLoading();
+            const result = await api('/items/batch-update', {
+                method: 'POST',
+                body: {
+                    item_ids: Array.from(selectedItems),
+                    category_id: categoryId ? parseInt(categoryId) : null
+                }
+            });
+            hideLoading();
+
+            if (result.success) {
+                showToast(result.message, 'success');
+                toggleEditMode();
+                loadItems();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        // 筛选
+        function toggleCategoryFilter(catId) {
+            currentCategoryFilter = currentCategoryFilter === catId ? null : catId;
+            renderCategorySelectors();
+        }
+
+        function toggleTagFilter(tagId) {
+            currentTagFilter = currentTagFilter === tagId ? null : tagId;
+            renderTagSelectors();
+        }
+
+        function applyFilters() {
+            bootstrap.Offcanvas.getInstance(document.getElementById('filterOffcanvas')).hide();
+            loadItems();
+        }
+
+        function clearFilters() {
+            currentCategoryFilter = null;
+            currentTagFilter = null;
+            document.getElementById('searchInput').value = '';
+            bootstrap.Offcanvas.getInstance(document.getElementById('filterOffcanvas')).hide();
+            loadItems();
+        }
+
+        function searchItems() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            // 简单实现：通过页面重新加载实现搜索
+            loadItems();
+        }
+
+        // 类别操作
+        function showCategoryModal(id = null, parentId = null) {
+            const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryModalTitle').textContent = id ? '编辑类别' : '添加类别';
+
+            if (id) {
+                // 编辑模式
+                const flatCats = getFlatCategories();
+                const cat = flatCats.find(c => c.id === id);
+                if (cat) {
+                    document.getElementById('categoryForm').querySelector('[name="id"]').value = id;
+                    document.getElementById('categoryForm').querySelector('[name="name"]').value = cat.name;
+                    document.getElementById('categoryForm').querySelector('[name="parent_id"]').value = cat.parent_id || '';
+                }
+            } else if (parentId) {
+                document.getElementById('categoryForm').querySelector('[name="parent_id"]').value = parentId;
+            }
+
+            modal.show();
+        }
+
+        async function saveCategory(e) {
+            e.preventDefault();
+            const form = e.target;
+            const id = form.querySelector('[name="id"]').value;
+            const name = form.querySelector('[name="name"]').value;
+            const parent_id = form.querySelector('[name="parent_id"]').value || null;
+
+            showLoading();
+            let result;
+            if (id) {
+                result = await api(`/categories/${id}`, {
+                    method: 'PUT',
+                    body: { name, parent_id }
+                });
+            } else {
+                result = await api('/categories', {
+                    method: 'POST',
+                    body: { name, parent_id }
+                });
+            }
+            hideLoading();
+
+            if (result.success) {
+                showToast(id ? '类别更新成功' : '类别创建成功', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+                loadCategories();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        async function handleCategoryAction(id, action) {
+            if (action === 'edit') {
+                showCategoryModal(id);
+            } else if (action === 'delete') {
+                if (!confirm('确定要删除这个类别吗？')) return;
+                showLoading();
+                const result = await api(`/categories/${id}`, { method: 'DELETE' });
+                hideLoading();
+                if (result.success) {
+                    showToast('类别已删除', 'success');
+                    loadCategories();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            }
+        }
+
+        // 标签操作
+        function showTagModal(id = null, parentId = null) {
+            const modal = new bootstrap.Modal(document.getElementById('tagModal'));
+            document.getElementById('tagForm').reset();
+            document.getElementById('tagModalTitle').textContent = id ? '编辑标签' : '添加标签';
+
+            if (id) {
+                const flatTags = getFlatTags();
+                const tag = flatTags.find(t => t.id === id);
+                if (tag) {
+                    document.getElementById('tagForm').querySelector('[name="id"]').value = id;
+                    document.getElementById('tagForm').querySelector('[name="name"]').value = tag.name;
+                    document.getElementById('tagForm').querySelector('[name="parent_id"]').value = tag.parent_id || '';
+                }
+            } else if (parentId) {
+                document.getElementById('tagForm').querySelector('[name="parent_id"]').value = parentId;
+            }
+
+            modal.show();
+        }
+
+        async function saveTag(e) {
+            e.preventDefault();
+            const form = e.target;
+            const id = form.querySelector('[name="id"]').value;
+            const name = form.querySelector('[name="name"]').value;
+            const parent_id = form.querySelector('[name="parent_id"]').value || null;
+
+            showLoading();
+            let result;
+            if (id) {
+                result = await api(`/tags/${id}`, {
+                    method: 'PUT',
+                    body: { name, parent_id }
+                });
+            } else {
+                result = await api('/tags', {
+                    method: 'POST',
+                    body: { name, parent_id }
+                });
+            }
+            hideLoading();
+
+            if (result.success) {
+                showToast(id ? '标签更新成功' : '标签创建成功', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('tagModal')).hide();
+                loadTags();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        async function handleTagAction(id, action) {
+            if (action === 'edit') {
+                showTagModal(id);
+            } else if (action === 'delete') {
+                if (!confirm('确定要删除这个标签吗？')) return;
+                showLoading();
+                const result = await api(`/tags/${id}`, { method: 'DELETE' });
+                hideLoading();
+                if (result.success) {
+                    showToast('标签已删除', 'success');
+                    loadTags();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            }
+        }
+
+        // 模板操作
+        let templateFields = [];
+
+        function showTemplateModal(id = null) {
+            const modal = new bootstrap.Modal(document.getElementById('templateModal'));
+            document.getElementById('templateForm').reset();
+            document.getElementById('templateModalTitle').textContent = id ? '编辑模板' : '添加模板';
+            templateFields = [];
+
+            if (id) {
+                const template = templates.find(t => t.id === id);
+                if (template) {
+                    document.getElementById('templateForm').querySelector('[name="id"]').value = id;
+                    document.getElementById('templateForm').querySelector('[name="name"]').value = template.name;
+                    document.getElementById('templateForm').querySelector('[name="category_id"]').value = template.category_id || '';
+                    templateFields = template.fields ? [...template.fields] : [];
+                }
+            }
+
+            renderTemplateFieldsList();
+            modal.show();
+        }
+
+        function renderTemplateFieldsList() {
+            const container = document.getElementById('templateFieldsList');
+            container.innerHTML = templateFields.map((f, i) => `
+                <div class="d-flex gap-2 mb-2 align-items-center">
+                    <input type="text" class="form-control form-control-sm" placeholder="字段名称"
+                           value="${f.field_name || ''}"
+                           onchange="templateFields[${i}].field_name = this.value">
+                    <select class="form-select form-select-sm" style="width:auto"
+                            onchange="templateFields[${i}].field_type = this.value">
+                        <option value="text" ${f.field_type === 'text' ? 'selected' : ''}>文本</option>
+                        <option value="number" ${f.field_type === 'number' ? 'selected' : ''}>数字</option>
+                    </select>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeTemplateField(${i})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addTemplateField() {
+            templateFields.push({ field_name: '', field_type: 'text' });
+            renderTemplateFieldsList();
+        }
+
+        function removeTemplateField(index) {
+            templateFields.splice(index, 1);
+            renderTemplateFieldsList();
+        }
+
+        async function saveTemplate(e) {
+            e.preventDefault();
+            const form = e.target;
+            const id = form.querySelector('[name="id"]').value;
+            const name = form.querySelector('[name="name"]').value;
+            const category_id = form.querySelector('[name="category_id"]').value || null;
+
+            if (!name) {
+                showToast('请输入模板名称', 'error');
+                return;
+            }
+
+            showLoading();
+            let result;
+            if (id) {
+                result = await api(`/templates/${id}`, {
+                    method: 'PUT',
+                    body: { name, category_id }
+                });
+            } else {
+                result = await api('/templates', {
+                    method: 'POST',
+                    body: { name, category_id, fields: templateFields }
+                });
+            }
+            hideLoading();
+
+            if (result.success) {
+                showToast(id ? '模板更新成功' : '模板创建成功', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('templateModal')).hide();
+                loadTemplates();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        function editTemplate(id) {
+            showTemplateModal(id);
+        }
+
+        async function deleteTemplate(id) {
+            if (!confirm('确定要删除这个模板吗？')) return;
+
+            showLoading();
+            const result = await api(`/templates/${id}`, { method: 'DELETE' });
+            hideLoading();
+
+            if (result.success) {
+                showToast('模板已删除', 'success');
+                loadTemplates();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        // 设置
+        async function changePassword(e) {
+            e.preventDefault();
+            const form = e.target;
+            const old_password = form.querySelector('[name="old_password"]').value;
+            const new_password = form.querySelector('[name="new_password"]').value;
+
+            if (new_password.length < 6) {
+                showToast('新密码至少6位', 'error');
+                return;
+            }
+
+            showLoading();
+            const result = await api('/auth/password', {
+                method: 'PUT',
+                body: { old_password, new_password }
+            });
+            hideLoading();
+
+            if (result.success) {
+                showToast('密码修改成功', 'success');
+                form.reset();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        async function updateProfile(e) {
+            e.preventDefault();
+            const form = e.target;
+            const display_name = form.querySelector('[name="display_name"]').value;
+
+            showLoading();
+            const result = await api('/auth/profile', {
+                method: 'PUT',
+                body: { display_name }
+            });
+            hideLoading();
+
+            if (result.success) {
+                showToast('信息修改成功', 'success');
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        // 统计
+        async function showStatsModal() {
+            showLoading();
+            const result = await api('/stats');
+            hideLoading();
+
+            if (result.success) {
+                const stats = result.data;
+                document.getElementById('statsModalBody').innerHTML = `
+                    <div class="text-center mb-4">
+                        <div class="stats-value">${stats.total_items}</div>
+                        <div class="stats-label">物品总数</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stats-value">${stats.total_categories}</div>
+                                <div class="stats-label">类别数</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stats-value">${stats.total_tags}</div>
+                                <div class="stats-label">标签数</div>
+                            </div>
+                        </div>
+                    </div>
+                    ${stats.category_stats && stats.category_stats.length ? `
+                        <h6 class="mt-4 mb-2">分类统计</h6>
+                        <ul class="list-group">
+                            ${stats.category_stats.map(c => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${c.name}
+                                    <span class="badge bg-primary rounded-pill">${c.count}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : ''}
+                    ${stats.tag_stats && stats.tag_stats.length ? `
+                        <h6 class="mt-4 mb-2">标签统计</h6>
+                        <ul class="list-group">
+                            ${stats.tag_stats.map(t => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${t.name}
+                                    <span class="badge bg-info rounded-pill">${t.count}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : ''}
+                `;
+                new bootstrap.Modal(document.getElementById('statsModal')).show();
+            }
+        }
+
+        // 事件绑定
+        document.addEventListener('DOMContentLoaded', () => {
+            // 登录表单
+            document.getElementById('loginForm').addEventListener('submit', login);
+
+            // 物品表单
+            document.getElementById('itemForm').addEventListener('submit', saveItem);
+
+            // 类别表单
+            document.getElementById('categoryForm').addEventListener('submit', saveCategory);
+
+            // 标签表单
+            document.getElementById('tagForm').addEventListener('submit', saveTag);
+
+            // 模板表单
+            document.getElementById('templateForm').addEventListener('submit', saveTemplate);
+
+            // 设置表单
+            document.getElementById('passwordForm').addEventListener('submit', changePassword);
+            document.getElementById('profileForm').addEventListener('submit', updateProfile);
+
+            // 检查登录状态
+            checkAuth();
+        });
+    </script>
+</body>
+</html>
