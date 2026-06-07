@@ -6,7 +6,7 @@ import os
 from flask import Flask, send_from_directory, jsonify, request, session
 from flask_cors import CORS
 from models import init_db
-from routes import auth_bp, items_bp, categories_bp, tags_bp, templates_bp, stats_bp
+from routes import auth_bp, items_bp, categories_bp, attributes_bp, stats_bp
 
 # 获取当前目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,8 +39,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(items_bp)
     app.register_blueprint(categories_bp)
-    app.register_blueprint(tags_bp)
-    app.register_blueprint(templates_bp)
+    app.register_blueprint(attributes_bp)
     app.register_blueprint(stats_bp)
 
     # 初始化数据库
