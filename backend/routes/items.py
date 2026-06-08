@@ -21,18 +21,41 @@ def get_items():
         return jsonify({'success': False, 'message': '未登录'}), 401
 
     template_id = request.args.get('template_id', type=int)
-    category_id = request.args.get('category_id', type=int)
     keyword = request.args.get('keyword', '')
+    
+    # 支持多个类别ID筛选
+    category_ids_str = request.args.get('category_ids', '')
+    category_ids = []
+    if category_ids_str:
+        try:
+            category_ids = [int(x) for x in category_ids_str.split(',') if x.strip()]
+        except ValueError:
+            category_ids = []
+    
+    # 支持多个属性ID筛选
+    attribute_ids_str = request.args.get('attribute_ids', '')
+    attribute_ids = []
+    if attribute_ids_str:
+        try:
+            attribute_ids = [int(x) for x in attribute_ids_str.split(',') if x.strip()]
+        except ValueError:
+            attribute_ids = []
 
-    # 如果指定了类别ID，先获取模板ID
-    if category_id and not template_id:
-        template = TemplateModel.get_by_category(category_id)
-        if template:
-            template_id = template['id']
+    # 如果指定了类别ID，先获取模板ID（支持多个类别）
+    template_ids = []
+    if category_ids:
+        for cat_id in category_ids:
+            template = TemplateModel.get_by_category(cat_id)
+            if template:
+                template_ids.append(template['id'])
+        if template_ids:
+            template_id = None  # 使用多个模板ID
 
     items = ItemModel.get_all(
         template_id=template_id,
-        keyword=keyword if keyword else None
+        template_ids=template_ids if template_ids else None,
+        keyword=keyword if keyword else None,
+        attribute_ids=attribute_ids if attribute_ids else None
     )
 
     return jsonify({
@@ -199,3 +222,25 @@ def batch_delete_items():
         'success': True,
         'message': f'成功删除 {len(item_ids)} 个物品'
     })
+
+
+@items_bp.route('/batch-attributes', methods=['POST'])
+def batch_update_attributes():
+    """批量为物品添加或移除属性"""
+    if not check_auth():
+        return jsonify({'success': False, 'message': '未登录'}), 401
+
+    data = request.get_json()
+    item_ids = data.get('item_ids', [])
+    attribute_ids = data.get('attribute_ids', [])
+    action = data.get('action', 'add')  # 'add' or 'remove'
+
+    if not item_ids or not attribute_ids:
+        return jsonify({'success': False, 'message': '请选择物品和属性'}), 400
+
+    if action == 'remove':
+        ItemModel.batch_remove_attributes(item_ids, attribute_ids)
+        return jsonify({'success': True, 'message': f'已为 {len(item_ids)} 个物品移除属性'})
+    else:
+        ItemModel.batch_add_attributes(item_ids, attribute_ids)
+        return jsonify({'success': True, 'message': f'已为 {len(item_ids)} 个物品添加属性'})

@@ -82,17 +82,27 @@ def change_password():
     return jsonify({'success': True, 'message': '密码修改成功'})
 
 
-@auth_bp.route('/profile', methods=['PUT'])
-def update_profile():
-    """修改用户信息"""
+@auth_bp.route('/account', methods=['PUT'])
+def update_account():
+    """修改用户名和显示名称"""
     if 'user_id' not in session:
         return jsonify({'success': False, 'message': '未登录'}), 401
 
     data = request.get_json()
+    username = data.get('username', '').strip()
     display_name = data.get('display_name', '').strip()
 
-    if not display_name:
-        return jsonify({'success': False, 'message': '显示名称不能为空'}), 400
+    if not username:
+        return jsonify({'success': False, 'message': '用户名不能为空'}), 400
 
-    UserModel.update_profile(session['user_id'], display_name)
-    return jsonify({'success': True, 'message': '信息修改成功'})
+    if len(username) < 3:
+        return jsonify({'success': False, 'message': '用户名至少3位'}), 400
+
+    # 检查用户名是否已被使用
+    from models import UserModel
+    existing = UserModel.get_by_username(username)
+    if existing and existing['id'] != session['user_id']:
+        return jsonify({'success': False, 'message': '用户名已被使用'}), 400
+
+    UserModel.update_account(session['user_id'], username, display_name)
+    return jsonify({'success': True, 'message': '账号信息已更新'})

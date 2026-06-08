@@ -201,6 +201,26 @@ class UserModel:
         conn.close()
         return True
 
+    @staticmethod
+    def get_by_username(username):
+        """根据用户名查找用户"""
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict_from_row(user)
+
+    @staticmethod
+    def update_account(user_id, username, display_name):
+        """更新用户名和显示名称"""
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET username = ?, display_name = ? WHERE id = ?', (username, display_name, user_id))
+        conn.commit()
+        conn.close()
+        return True
+
 
 class CategoryModel:
     """类别模型（单层级，每个类别必须有模板）"""
@@ -558,13 +578,13 @@ class ItemModel:
     """物品模型"""
 
     @staticmethod
-    def get_all(template_id=None, keyword=None):
+    def get_all(template_id=None, template_ids=None, keyword=None, attribute_ids=None):
         """获取所有物品（支持筛选）"""
         conn = get_db()
         cursor = conn.cursor()
 
         query = '''
-            SELECT i.*, t.name as template_name, c.name as category_name, c.id as category_id
+            SELECT DISTINCT i.*, t.name as template_name, c.name as category_name, c.id as category_id
             FROM items i
             INNER JOIN templates t ON i.template_id = t.id
             INNER JOIN categories c ON t.category_id = c.id
@@ -572,7 +592,11 @@ class ItemModel:
         conditions = []
         params = []
 
-        if template_id:
+        if template_ids and template_ids:
+            placeholders = ','.join('?' * len(template_ids))
+            conditions.append(f'i.template_id IN ({placeholders})')
+            params.extend(template_ids)
+        elif template_id:
             conditions.append('i.template_id = ?')
             params.append(template_id)
 
@@ -580,6 +604,12 @@ class ItemModel:
             conditions.append('(i.name LIKE ? OR i.remark LIKE ?)')
             params.append(f'%{keyword}%')
             params.append(f'%{keyword}%')
+
+        if attribute_ids:
+            placeholders = ','.join('?' * len(attribute_ids))
+            query += f' INNER JOIN item_attributes ia ON ia.item_id = i.id'
+            conditions.append(f'ia.attribute_id IN ({placeholders})')
+            params.extend(attribute_ids)
 
         if conditions:
             query += ' WHERE ' + ' AND '.join(conditions)
@@ -593,7 +623,6 @@ class ItemModel:
         result = []
         for item in items:
             item_dict = dict_from_row(item)
-            # 获取属性值
             item_dict['attributes'] = ItemModel.get_item_attributes(item_dict['id'])
             result.append(item_dict)
 
@@ -718,6 +747,33 @@ class ItemModel:
         placeholders = ','.join('?' * len(item_ids))
         cursor.execute(f'DELETE FROM item_attributes WHERE item_id IN ({placeholders})', item_ids)
         cursor.execute(f'DELETE FROM items WHERE id IN ({placeholders})', item_ids)
+        conn.commit()
+        conn.close()
+        return True
+
+    @staticmethod
+    def batch_add_attributes(item_ids, attribute_ids):
+        """为多个物品批量添加属性"""
+        conn = get_db()
+        cursor = conn.cursor()
+        placeholders_items = ','.join('?' * len(item_ids))
+        for item_id in item_ids:
+            for attr_id in attribute_ids:
+                cursor.execute('SELECT id FROM item_attributes WHERE item_id = ? AND attribute_id = ?', (item_id, attr_id))
+                if not cursor.fetchone():
+                    cursor.execute('INSERT INTO item_attributes (item_id, attribute_id) VALUES (?, ?)', (item_id, attr_id))
+        conn.commit()
+        conn.close()
+        return True
+
+    @staticmethod
+    def batch_remove_attributes(item_ids, attribute_ids):
+        """为多个物品批量移除属性"""
+        conn = get_db()
+        cursor = conn.cursor()
+        for item_id in item_ids:
+            for attr_id in attribute_ids:
+                cursor.execute('DELETE FROM item_attributes WHERE item_id = ? AND attribute_id = ?', (item_id, attr_id))
         conn.commit()
         conn.close()
         return True

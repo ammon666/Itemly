@@ -61,13 +61,13 @@
         .app-header {
             background: var(--primary-color);
             color: white;
-            padding: 1rem;
+            padding: 0.5rem 1rem;
             position: sticky;
             top: 0;
             z-index: 1000;
             box-shadow: var(--card-shadow);
         }
-        .app-header .navbar-brand { color: white; font-weight: 700; font-size: 1.5rem; }
+        .app-header .navbar-brand { color: white; font-weight: 700; font-size: 1.15rem; }
         .app-header .nav-link { color: rgba(255, 255, 255, 0.85); transition: color var(--transition-speed); }
         .app-header .nav-link:hover { color: white; }
 
@@ -76,21 +76,61 @@
             .app-sidebar {
                 position: fixed;
                 left: 0;
-                top: 56px;
+                top: 42px;
                 width: 240px;
-                height: calc(100vh - 56px);
+                height: calc(100vh - 42px);
                 background: white;
                 border-right: 1px solid #dee2e6;
                 overflow-y: auto;
                 padding: 1rem 0;
             }
-            .app-main { margin-left: 240px; padding-top: 56px; min-height: 100vh; }
+            .app-main { margin-left: 240px; padding-top: 42px; min-height: 100vh; }
         }
         @media (max-width: 767px) {
             .app-sidebar { display: none; }
-            .app-main { padding-top: 56px; padding-bottom: 80px; }
+            .app-main { padding-top: 42px; padding-bottom: 80px; }
             .offcanvas { width: 280px !important; }
         }
+
+        /* 属性层级颜色 - 更明显美观的配色 */
+        .attr-level-0 { color: #495057; }
+        .attr-level-1 { color: #0d6efd; }
+        .attr-level-2 { color: #198754; }
+        .attr-level-3 { color: #f59e0b; }
+        .attr-level-4 { color: #dc3545; }
+        .attr-level-0-bg { background-color: #dee2e6 !important; }
+        .attr-level-1-bg { background-color: #dbeafe !important; }
+        .attr-level-2-bg { background-color: #d1fae5 !important; }
+        .attr-level-3-bg { background-color: #fef3c7 !important; }
+        .attr-level-4-bg { background-color: #fee2e2 !important; }
+        /* 一级属性交替背景色 - 更明显 */
+        .attr-alt-bg { background-color: #f8fafc !important; border-left: 3px solid #cbd5e1; }
+
+        /* 类别和属性标签样式 */
+        .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; margin-right: 0.2rem; margin-bottom: 0.2rem; font-weight: 500; }
+        
+        /* 分类标签颜色 - 高对比度配色 */
+        .cat-color-0 { background: #1e40af; color: white; }
+        .cat-color-1 { background: #991b1b; color: white; }
+        .cat-color-2 { background: #166534; color: white; }
+        .cat-color-3 { background: #7c2d12; color: white; }
+        .cat-color-4 { background: #4c1d95; color: white; }
+        .cat-color-5 { background: #0f766e; color: white; }
+        .cat-color-6 { background: #be185d; color: white; }
+        .cat-color-7 { background: #b45309; color: white; }
+        
+        /* 属性值标签颜色 - 高对比度配色 */
+        .attr-color-0 { background: #3b82f6; color: white; }
+        .attr-color-1 { background: #22c55e; color: white; }
+        .attr-color-2 { background: #f59e0b; color: white; }
+        .attr-color-3 { background: #ef4444; color: white; }
+        .attr-color-4 { background: #8b5cf6; color: white; }
+        .attr-color-5 { background: #ec4899; color: white; }
+        .attr-color-6 { background: #14b8a6; color: white; }
+        .attr-color-7 { background: #f97316; color: white; }
+        .tag-clickable { cursor: pointer; transition: all 0.2s; }
+        .tag-clickable:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        .tag-filter-active { outline: 2px solid #ffc107; outline-offset: 1px; }
 
         .sidebar-menu { list-style: none; padding: 0; margin: 0; }
         .sidebar-menu-item {
@@ -110,44 +150,125 @@
         .app-content { padding: 1rem; }
 
         /* 统计卡片 */
-        .stats-card {
-            background: white;
+        /* 统计信息块样式 */
+        .stat-block {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1rem;
             border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: var(--card-shadow);
             text-align: center;
-            margin-bottom: 1rem;
+            color: white;
         }
-        .stats-card .stats-value { font-size: 2rem; font-weight: 700; color: var(--primary-color); }
-        .stats-card .stats-label { font-size: 0.875rem; color: #6c757d; }
+        .stat-block .stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+        .stat-block .stat-label { font-size: 0.8rem; opacity: 0.9; margin-top: 0.25rem; }
+        .stat-primary { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+        .stat-success { background: linear-gradient(135deg, #166534, #22c55e); }
+        .stat-info { background: linear-gradient(135deg, #0f766e, #14b8a6); }
 
-        /* 物品卡片网格 */
+        /* 物品卡片网格 - 响应式设计 */
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 1rem;
-            padding: 0.5rem;
+            gap: 0.4rem;
+            padding: 0.4rem;
         }
-        @media (min-width: 576px) { .items-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+        @media (max-width: 575.98px) {
+            .items-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+        @media (min-width: 576px) and (max-width: 767.98px) {
+            .items-grid { grid-template-columns: repeat(4, 1fr) !important; }
+        }
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .items-grid { grid-template-columns: repeat(5, 1fr) !important; }
+        }
+        @media (min-width: 992px) {
+            .items-grid { grid-template-columns: repeat(6, 1fr) !important; }
+        }
+        .items-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .items-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .items-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .items-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+        .items-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
 
         .item-card {
             background: white;
-            border-radius: 0.5rem;
+            border-radius: 0.35rem;
             overflow: hidden;
             box-shadow: var(--card-shadow);
             transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-            cursor: pointer;
+            max-width: 140px;
         }
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); }
-        .item-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #e9ecef; }
-        .item-card-body { padding: 0.75rem; }
-        .item-card-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .item-card-category { font-size: 0.75rem; color: #6c757d; }
-        .item-card-attrs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem; }
-        .item-attr { font-size: 0.625rem; padding: 0.125rem 0.375rem; background: #e9ecef; border-radius: 0.25rem; color: #495057; }
+        .item-card-img { 
+            width: 100%; 
+            aspect-ratio: 1; 
+            object-fit: cover; 
+            background: #e9ecef; 
+            cursor: zoom-in;
+        }
+        .item-card-body { padding: 0.4rem; }
+        .item-card-title { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-card-tags { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 0.2rem; 
+            align-items: center;
+        }
 
-        /* 悬浮添加按钮 */
+        /* 图片放大模态框 */
+        .image-modal-backdrop { background-color: rgba(0, 0, 0, 0.9) !important; }
+        .image-modal-dialog { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 90vh;
+            margin: 0;
+            max-width: 95vw;
+            max-height: 95vh;
+        }
+        .image-modal-content { 
+            background: transparent; 
+            border: none; 
+            width: 100%; 
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-modal-img { 
+            max-width: 100%; 
+            max-height: 90vh; 
+            object-fit: contain; 
+            border-radius: 0.5rem;
+            box-shadow: 0 1rem 3rem rgba(0,0,0,0.3);
+        }
+
+        /* 筛选标签区域 */
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.5rem;
+            background: #e9ecef;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .filter-tag.category { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .filter-tag.attr { background: #e3f2fd; color: #0984e3; }
+        .filter-tag.keyword { background: #fff3cd; color: #856404; }
+        .filter-tag-remove { cursor: pointer; opacity: 0.7; }
+        .filter-tag-remove:hover { opacity: 1; }
+
+        /* 悬浮添加按钮 - 仅首页显示 */
         .fab-button {
+            display: none;
             position: fixed;
             bottom: 6rem;
             right: 1rem;
@@ -162,8 +283,9 @@
             z-index: 999;
             transition: transform var(--transition-speed);
         }
+        .fab-button.visible { display: block; }
         .fab-button:hover { transform: scale(1.1); color: white; }
-        @media (min-width: 768px) { .fab-button { bottom: 2rem; right: 2rem; } }
+        @media (min-width: 768px) { .fab-button.visible { bottom: 2rem; right: 2rem; } }
 
         /* 模态框 */
         .modal-header { border-bottom: none; padding-bottom: 0; }
@@ -189,17 +311,43 @@
 
         /* 树形选择器 */
         .tree-selector {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             border: 1px solid #dee2e6;
             border-radius: 0.5rem;
             padding: 0.5rem;
         }
-        .tree-item { padding: 0.25rem 0.5rem; cursor: pointer; border-radius: 0.25rem; }
-        .tree-item:hover { background: var(--bg-color); }
-        .tree-item.selected { background: #e7f1ff; color: var(--primary-color); }
-        .tree-children { padding-left: 1.5rem; }
-        .tree-item-expand { cursor: pointer; width: 20px; display: inline-block; }
+        .tree-row {
+            display: flex;
+            align-items: center;
+            padding: 0.35rem 0.5rem;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s;
+        }
+        .tree-row:hover { background: #f1f3f5; }
+        .tree-row.selected { background: #e7f1ff; color: #0d6efd; }
+        .tree-row.leaf-selectable { cursor: pointer; }
+        .tree-row.field-name { font-weight: 600; cursor: pointer; }
+        .tree-row.field-name:hover { background: #e9ecef; }
+        .tree-children { padding-left: 1.75rem; }
+        .tree-expand-icon {
+            display: inline-flex;
+            width: 20px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .tree-expand-placeholder { width: 20px; flex-shrink: 0; display: inline-block; }
+
+        /* 模板属性选择器 - 防止checkbox点击触发折叠 */
+        .tpl-attr-checkbox, .tpl-attr-required { cursor: pointer; }
+
+        /* 物品管理表格样式 */
+        .batch-toolbar { padding: 0.5rem; background: #f8f9fa; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .batch-toolbar .selected-count { font-weight: 600; color: var(--primary-color); }
 
         /* 属性选择器（多选） */
         .attr-selector {
@@ -268,7 +416,6 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">登 录</button>
             </form>
-            <div class="mt-3 text-center text-muted"><small>默认账号: admin / admin123</small></div>
         </div>
     </div>
 
@@ -278,9 +425,10 @@
         <nav class="app-header navbar">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#"><i class="bi bi-box-seam"></i> Itemly</a>
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-link nav-link" onclick="showStatsModal()"><i class="bi bi-pie-chart"></i></button>
-                    <button class="btn btn-link nav-link" onclick="logout()"><i class="bi bi-box-arrow-right"></i></button>
+                <div class="d-flex align-items-center gap-3">
+                    <span id="navUsername" class="text-white small"></span>
+                    <span class="text-white opacity-25">|</span>
+                    <button class="btn btn-link nav-link text-white" onclick="logout()" title="登出"><i class="bi bi-box-arrow-right"></i></button>
                 </div>
             </div>
         </nav>
@@ -289,9 +437,9 @@
         <nav class="app-sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item active" data-page="home" onclick="navigateTo('home')"><i class="bi bi-house"></i> 首页</li>
-                <li class="sidebar-menu-item" data-page="items" onclick="navigateTo('items')"><i class="bi bi-box"></i> 物品管理</li>
                 <li class="sidebar-menu-item" data-page="categories" onclick="navigateTo('categories')"><i class="bi bi-folder"></i> 类别管理</li>
                 <li class="sidebar-menu-item" data-page="attributes" onclick="navigateTo('attributes')"><i class="bi bi-sliders"></i> 属性管理</li>
+                <li class="sidebar-menu-item" data-page="items" onclick="navigateTo('items')"><i class="bi bi-box"></i> 物品管理</li>
                 <li class="sidebar-menu-item" data-page="settings" onclick="navigateTo('settings')"><i class="bi bi-gear"></i> 设置</li>
             </ul>
         </nav>
@@ -300,25 +448,48 @@
         <main class="app-main">
             <!-- 首页 -->
             <div id="pageHome" class="app-content page">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">物品列表</h5>
-                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas" href="#filterOffcanvas"><i class="bi bi-funnel"></i> 筛选</button>
+                <!-- 筛选工具栏 -->
+                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                    <div class="input-group" style="max-width: 300px;">
+                        <input type="text" class="form-control" id="searchInputHome" placeholder="搜索物品..." oninput="onSearchInputHome(this.value)">
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas"><i class="bi bi-funnel"></i> 筛选</button>
+                    <button id="clearHomeFilterBtn" class="btn btn-outline-danger btn-sm" style="display:none" onclick="clearHomeFilters()"><i class="bi bi-x-circle"></i> 清空</button>
                 </div>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="searchInput" placeholder="搜索物品...">
-                    <button class="btn btn-primary" onclick="searchItems()"><i class="bi bi-search"></i></button>
-                </div>
+                <!-- 筛选标签显示 -->
+                <div id="homeFilterTags" class="mb-2" style="display:none"></div>
                 <div id="itemsGrid" class="items-grid"></div>
                 <div id="emptyState" class="empty-state" style="display: none;">
                     <i class="bi bi-box"></i>
                     <h5>暂无物品</h5>
-                    <p>点击下方按钮添加第一个物品</p>
+                    <p>点击右下角按钮添加第一个物品</p>
                 </div>
             </div>
 
             <!-- 物品管理页面 -->
             <div id="pageItems" class="app-content page" style="display: none;">
                 <div class="page-title"><span>物品管理</span></div>
+                <!-- 统计信息栏 -->
+                <div id="itemsStatsBar" class="d-flex gap-2 mb-3 flex-wrap" style="display:none">
+                    <div class="stat-block stat-primary">
+                        <div class="stat-value" id="statsTotal">0</div>
+                        <div class="stat-label">物品总数</div>
+                    </div>
+                    <div class="stat-block stat-success">
+                        <div class="stat-value" id="statsCategories">0</div>
+                        <div class="stat-label">类别数</div>
+                    </div>
+                    <div class="stat-block stat-info">
+                        <div class="stat-value" id="statsAttributes">0</div>
+                        <div class="stat-label">属性数</div>
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchInputItems" placeholder="搜索物品..." oninput="onSearchInputItems(this.value)">
+                    <button class="btn btn-outline-secondary" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvasItems"><i class="bi bi-funnel"></i> 筛选</button>
+                    <button id="clearItemsFilterBtn" class="btn btn-outline-danger" style="display:none" onclick="clearItemsFilters()"><i class="bi bi-x-circle"></i> 清空</button>
+                </div>
+                <div id="itemsFilterTags" class="mb-3" style="display:none"></div>
                 <div id="itemsManagementList"></div>
             </div>
 
@@ -360,11 +531,17 @@
                     </form>
                 </div>
                 <div class="admin-card">
-                    <div class="admin-card-title">个人信息</div>
-                    <form id="profileForm">
+                    <div class="admin-card-title">账号信息</div>
+                    <form id="accountForm">
+                        <div class="mb-3">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="settingsUsername" required minlength="3">
+                            <div class="form-text">用户名用于登录系统</div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">显示名称</label>
-                            <input type="text" class="form-control" name="display_name" required>
+                            <input type="text" class="form-control" id="settingsDisplayName">
+                            <div class="form-text">显示名称用于界面展示</div>
                         </div>
                         <button type="submit" class="btn btn-primary">保存</button>
                     </form>
@@ -373,22 +550,55 @@
         </main>
 
         <!-- 悬浮添加按钮 -->
-        <button class="fab-button" onclick="showAddItemModal()"><i class="bi bi-plus"></i></button>
+        <button class="fab-button" id="fabButton" onclick="showAddItemModal()"><i class="bi bi-plus"></i></button>
     </div>
 
-    <!-- 筛选侧边栏 -->
+    <!-- 首页筛选侧边栏 -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvas">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title">筛选</h5>
+            <h5 class="offcanvas-title">筛选物品</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
             <div class="mb-3">
-                <label class="form-label">类别</label>
+                <label class="form-label small">按类别</label>
                 <div id="filterCategories" class="tree-selector"></div>
             </div>
-            <button class="btn btn-primary w-100 mb-2" onclick="applyFilters()">应用筛选</button>
-            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">清空筛选</button>
+            <div class="mb-3">
+                <label class="form-label small">按属性（点击属性值筛选）</label>
+                <div id="filterAttributes" class="tree-selector"></div>
+            </div>
+            <button class="btn btn-primary w-100 mb-2" onclick="applyHomeFilters()">应用筛选</button>
+            <button class="btn btn-outline-secondary w-100" onclick="clearHomeFilters()">清空筛选</button>
+        </div>
+    </div>
+
+    <!-- 物品管理筛选侧边栏 -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="filterOffcanvasItems">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">筛选物品</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="mb-3">
+                <label class="form-label small">按类别</label>
+                <div id="filterCategoriesItems" class="tree-selector"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small">按属性（点击属性值筛选）</label>
+                <div id="filterAttributesItems" class="tree-selector"></div>
+            </div>
+            <button class="btn btn-primary w-100 mb-2" onclick="applyItemsFilters()">应用筛选</button>
+            <button class="btn btn-outline-secondary w-100" onclick="clearItemsFilters()">清空筛选</button>
+        </div>
+    </div>
+
+    <!-- 图片放大模态框 -->
+    <div class="modal fade" id="imageModal" tabindex="-1" data-bs-backdrop="static" onclick="bootstrap.Modal.getOrCreateInstance(this).hide()">
+        <div class="modal-dialog image-modal-dialog">
+            <div class="modal-content image-modal-content" onclick="event.stopPropagation()">
+                <img id="imageModalImg" class="image-modal-img" src="" alt="">
+            </div>
         </div>
     </div>
 
@@ -502,10 +712,6 @@
                 <div class="modal-body">
                     <input type="hidden" id="templateCategoryId">
                     <div class="mb-3">
-                        <label class="form-label">模板名称</label>
-                        <input type="text" class="form-control" id="templateNameInput">
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">选择属性字段（勾选是否必填）</label>
                         <div id="templateAttributeSelector" class="attr-selector"></div>
                     </div>
@@ -549,6 +755,30 @@
         </div>
     </div>
 
+    <!-- 批量编辑属性模态框 -->
+    <div class="modal fade" id="batchEditModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">批量编辑属性</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info small mb-3" id="batchEditInfo"></div>
+                    <div class="mb-3">
+                        <label class="form-label">选择要操作的属性（可多选，支持树形）</label>
+                        <div id="batchAttrSelector" class="tree-selector"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="batchUpdateAttrs('remove')">移除所选属性</button>
+                    <button type="button" class="btn btn-primary" onclick="batchUpdateAttrs('add')">添加所选属性</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 统计模态框 -->
     <div class="modal fade" id="statsModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -582,10 +812,29 @@
         let attributes = [];
         let items = [];
         let currentItemId = null;
-        let currentCategoryFilter = null;
         let currentTemplateId = null;
         let currentItemImages = [];
         let keepAdding = false;
+        let selectedItemIds = [];
+        let searchDebounceTimer = null;
+
+        // 字符串哈希函数
+        function stringHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash);
+        }
+
+        // 首页筛选状态（独立）
+        const homeFilter = { categories: [], attributes: [], keyword: '' };
+        // 物品管理筛选状态（独立）
+        const itemsFilter = { categories: [], attributes: [], keyword: '' };
+        // 当前页面使用的筛选（用于各种操作后刷新）
+        let activeFilter = homeFilter;
 
         // API工具
         async function api(endpoint, options = {}) {
@@ -621,7 +870,12 @@
         async function checkAuth() {
             try {
                 const result = await api('/auth/check');
-                if (result.authenticated) { currentUser = result.data; showApp(); loadAllData(); }
+                if (result.authenticated) { 
+                    currentUser = result.data; 
+                    showApp(); 
+                    loadAllData(); 
+                    document.getElementById('navUsername').textContent = currentUser.username;
+                }
                 else showLogin();
             } catch (error) {
                 console.error('检查登录状态失败:', error);
@@ -639,7 +893,13 @@
             showLoading();
             const result = await api('/auth/login', { method: 'POST', body: { username, password } });
             hideLoading();
-            if (result.success) { currentUser = result.data; showApp(); loadAllData(); document.getElementById('loginForm').reset(); }
+            if (result.success) { 
+                currentUser = result.data; 
+                showApp(); 
+                loadAllData(); 
+                document.getElementById('navUsername').textContent = currentUser.username;
+                document.getElementById('loginForm').reset(); 
+            }
             else showToast(result.message, 'error');
         }
 
@@ -661,8 +921,13 @@
         async function loadCategories() {
             try {
                 const result = await api('/categories');
-                if (result.success) { categories = result.data || []; renderCategorySelectors(); }
-                else categories = [];
+                if (result.success) {
+                    categories = result.data || [];
+                    renderCategorySelectors();
+                    // 如果当前在类别管理页，也刷新列表
+                    const catPage = document.getElementById('pageCategories');
+                    if (catPage && catPage.style.display !== 'none') renderCategoryList();
+                } else categories = [];
             } catch (error) {
                 console.error('加载类别失败:', error);
                 categories = [];
@@ -672,35 +937,240 @@
         async function loadAttributes() {
             try {
                 const result = await api('/attributes?flat=true');
-                if (result.success) { attributes = result.data || []; renderAttributeSelectors(); }
-                else attributes = [];
+                if (result.success) {
+                    attributes = result.data || [];
+                    renderAttributeSelectors();
+                    // 如果当前在属性管理页，也刷新树
+                    const attrPage = document.getElementById('pageAttributes');
+                    if (attrPage && attrPage.style.display !== 'none') renderAttributeTree();
+                    // 同时刷新筛选侧边栏的属性
+                    renderFilterAttributes();
+                } else attributes = [];
             } catch (error) {
                 console.error('加载属性失败:', error);
                 attributes = [];
             }
         }
 
-        async function loadItems() {
+        async function loadItems(filter) {
+            const f = filter || activeFilter || homeFilter;
             try {
                 const params = new URLSearchParams();
-                if (currentCategoryFilter) params.append('category_id', currentCategoryFilter);
+                if (f.categories && f.categories.length) {
+                    params.append('category_ids', f.categories.join(','));
+                }
+                if (f.keyword) params.append('keyword', f.keyword);
+                if (f.attributes && f.attributes.length) {
+                    params.append('attribute_ids', f.attributes.join(','));
+                }
                 const result = await api('/items?' + params.toString());
-                if (result.success) { items = result.data || []; renderItems(); }
-                else items = [];
+                if (result.success) {
+                    items = result.data || [];
+                    renderItems();
+                    const itemsPage = document.getElementById('pageItems');
+                    if (itemsPage && itemsPage.style.display !== 'none') {
+                        renderItemsManagement();
+                        updateItemsStats();
+                    }
+                } else items = [];
             } catch (error) {
                 console.error('加载物品失败:', error);
                 items = [];
             }
         }
 
+        function updateItemsStats() {
+            const statsBar = document.getElementById('itemsStatsBar');
+            const total = items.length;
+            const uniqueCats = new Set(items.map(i => i.category_id)).size;
+            const uniqueAttrs = new Set(items.flatMap(i => (i.attributes || []).map(a => a.attribute_id))).size;
+            
+            document.getElementById('statsTotal').textContent = total;
+            document.getElementById('statsCategories').textContent = uniqueCats;
+            document.getElementById('statsAttributes').textContent = uniqueAttrs;
+            
+            statsBar.style.display = 'block';
+        }
+
         // 渲染函数
         function renderCategorySelectors() {
+            // 物品添加弹窗的模板选择
             document.getElementById('templateSelect').innerHTML = '<option value="">请选择类别</option>' +
                 categories.map(c => `<option value="${c.template_id}" data-category-id="${c.id}">${c.name}</option>`).join('');
 
-            document.getElementById('filterCategories').innerHTML = categories.map(c =>
-                `<div class="tree-item ${currentCategoryFilter == c.id ? 'selected' : ''}" onclick="toggleCategoryFilter(${c.id})">${c.name}</div>`
-            ).join('');
+            // 首页类别筛选（支持多选）
+            const homeCatEl = document.getElementById('filterCategories');
+            if (homeCatEl) {
+                const hasCategoryFilter = homeFilter.categories && homeFilter.categories.length > 0;
+                homeCatEl.innerHTML = '<div class="tree-row ' + (!hasCategoryFilter ? 'selected' : '') + '" onclick="clearHomeCategoryFilter()"><i class="bi bi-diagram-2 me-2"></i> 全部类别</div>' +
+                    categories.map(c => {
+                        const isSelected = homeFilter.categories && homeFilter.categories.includes(c.id);
+                        return `<div class="tree-row ${isSelected ? 'selected' : ''}" onclick="toggleHomeCategoryFilter(${c.id})"><i class="bi bi-folder2 me-2"></i>${c.name}</div>`;
+                    }).join('');
+            }
+
+            // 物品管理类别筛选（支持多选）
+            const itemsCatEl = document.getElementById('filterCategoriesItems');
+            if (itemsCatEl) {
+                const hasCategoryFilter = itemsFilter.categories && itemsFilter.categories.length > 0;
+                itemsCatEl.innerHTML = '<div class="tree-row ' + (!hasCategoryFilter ? 'selected' : '') + '" onclick="clearItemsCategoryFilter()"><i class="bi bi-diagram-2 me-2"></i> 全部类别</div>' +
+                    categories.map(c => {
+                        const isSelected = itemsFilter.categories && itemsFilter.categories.includes(c.id);
+                        return `<div class="tree-row ${isSelected ? 'selected' : ''}" onclick="toggleItemsCategoryFilter(${c.id})"><i class="bi bi-folder2 me-2"></i>${c.name}</div>`;
+                    }).join('');
+            }
+        }
+
+        function renderFilterAttributes() {
+            renderFilterAttrPanel('filterAttributes', homeFilter);
+            renderFilterAttrPanel('filterAttributesItems', itemsFilter);
+        }
+
+        function renderFilterAttrPanel(containerId, filterObj) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const tree = buildTree(attributes);
+            if (!tree.length) {
+                container.innerHTML = '<div class="text-muted small">暂无属性</div>';
+                return;
+            }
+            container.innerHTML = renderFilterAttrTree(tree, 0, filterObj, containerId);
+        }
+
+        function renderFilterAttrTree(nodes, level, filterObj, containerId) {
+            return nodes.map(n => {
+                const lv = Math.min(level, 4);
+                const hasChildren = n.children && n.children.length;
+                // level 0 是字段名（不可选，只展开/收起）；level 1+ 是属性值（可筛选）
+                const isFieldName = level === 0;
+                const isSelected = !isFieldName && filterObj.attributes.includes(n.id);
+
+                let expandIcon = '';
+                if (hasChildren) {
+                    expandIcon = `<span class="tree-expand-icon" onclick="event.stopPropagation(); toggleFilterNode(this, '${containerId}')"><i class="bi bi-${isFieldName ? 'caret-down' : 'caret-right'}-fill"></i></span>`;
+                } else {
+                    expandIcon = '<span class="tree-expand-placeholder"></span>';
+                }
+
+                const childrenHtml = hasChildren
+                    ? `<div class="tree-children" style="${isFieldName ? '' : 'display:none;'}">${renderFilterAttrTree(n.children, level + 1, filterObj, containerId)}</div>`
+                    : '';
+
+                if (isFieldName) {
+                    return `<div>
+                        <div class="tree-row field-name" onclick="toggleFilterNode(this, '${containerId}')" data-container="${containerId}" data-field="1">
+                            <i class="bi bi-tags me-2"></i>
+                            <strong class="attr-level-${lv}">${n.name}</strong>
+                        </div>
+                        ${childrenHtml}
+                    </div>`;
+                } else {
+                    return `<div>
+                        <div class="tree-row ${isSelected ? 'selected' : ''}" onclick="toggleFilterAttrSelect(this, ${n.id}, '${containerId}')" data-container="${containerId}">
+                            ${expandIcon}
+                            <span class="attr-level-${lv}">${n.name}</span>
+                        </div>
+                        ${childrenHtml}
+                    </div>`;
+                }
+            }).join('');
+        }
+
+        function toggleFilterNode(el, containerId) {
+            // 查找当前 row 下面的 tree-children（可能是当前 div 的子元素）
+            const children = el.closest('div').querySelector(':scope > .tree-children');
+            const directChildren = el.parentElement.querySelector(':scope > .tree-children');
+            const target = children || directChildren;
+            if (target) {
+                target.style.display = target.style.display === 'none' ? 'block' : 'none';
+                const icon = el.querySelector('i.bi-caret-right-fill, i.bi-caret-down-fill');
+                if (icon) {
+                    icon.classList.toggle('bi-caret-right-fill');
+                    icon.classList.toggle('bi-caret-down-fill');
+                }
+            }
+        }
+
+        function toggleFilterAttrSelect(el, attrId, containerId) {
+            const f = containerId === 'filterAttributes' ? homeFilter : itemsFilter;
+            const idx = f.attributes.indexOf(attrId);
+            if (idx >= 0) {
+                f.attributes.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                f.attributes.push(attrId);
+                el.classList.add('selected');
+            }
+        }
+
+        // 首页类别筛选（支持多选）
+        function toggleHomeCategoryFilter(catId) {
+            if (!homeFilter.categories) homeFilter.categories = [];
+            const idx = homeFilter.categories.indexOf(catId);
+            if (idx >= 0) {
+                homeFilter.categories.splice(idx, 1);
+            } else {
+                homeFilter.categories.push(catId);
+            }
+            renderCategorySelectors();
+            loadItems(homeFilter);
+            updateHomeFilterUI();
+        }
+
+        function clearHomeCategoryFilter() {
+            homeFilter.categories = [];
+            renderCategorySelectors();
+            loadItems(homeFilter);
+            updateHomeFilterUI();
+        }
+
+        // 首页属性筛选（支持多选）
+        function toggleHomeAttributeFilter(attrId) {
+            if (!homeFilter.attributes) homeFilter.attributes = [];
+            const idx = homeFilter.attributes.indexOf(attrId);
+            if (idx >= 0) {
+                homeFilter.attributes.splice(idx, 1);
+            } else {
+                homeFilter.attributes.push(attrId);
+            }
+            renderFilterAttributes();
+            loadItems(homeFilter);
+            updateHomeFilterUI();
+        }
+
+        // 物品管理类别筛选（支持多选）
+        function toggleItemsCategoryFilter(catId) {
+            if (!itemsFilter.categories) itemsFilter.categories = [];
+            const idx = itemsFilter.categories.indexOf(catId);
+            if (idx >= 0) {
+                itemsFilter.categories.splice(idx, 1);
+            } else {
+                itemsFilter.categories.push(catId);
+            }
+            renderCategorySelectors();
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
+        }
+
+        function clearItemsCategoryFilter() {
+            itemsFilter.categories = [];
+            renderCategorySelectors();
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
+        }
+
+        // 物品管理属性筛选（支持多选）
+        function toggleItemsAttributeFilter(attrId) {
+            if (!itemsFilter.attributes) itemsFilter.attributes = [];
+            const idx = itemsFilter.attributes.indexOf(attrId);
+            if (idx >= 0) {
+                itemsFilter.attributes.splice(idx, 1);
+            } else {
+                itemsFilter.attributes.push(attrId);
+            }
+            renderFilterAttributes();
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
         }
 
         function renderAttributeSelectors() {
@@ -713,42 +1183,166 @@
         function renderItems() {
             const grid = document.getElementById('itemsGrid');
             const empty = document.getElementById('emptyState');
-            if (items.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
-            empty.style.display = 'none';
-            grid.innerHTML = items.map(item => `
-                <div class="item-card fade-in" onclick="showItemDetail(${item.id})">
-                    <img src="/uploads/${item.images}" class="item-card-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e9ecef%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-size=%2212%22>无图片</text></svg>'" alt="${item.name}">
+            if (items.length === 0) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+            if (empty) empty.style.display = 'none';
+
+            // 使用响应式CSS类，不动态切换列数
+            grid.className = 'items-grid';
+
+            // 构建属性标签，使用哈希函数分配颜色
+            grid.innerHTML = items.map(item => {
+                const catColorIdx = stringHash(item.category_name || '') % 8;
+                const attrTags = (item.attributes && item.attributes.length)
+                    ? item.attributes.map(a => {
+                        const attrColorIdx = stringHash(a.attribute_name) % 8;
+                        return `<span class="tag attr-color-${attrColorIdx} tag-clickable" onclick="event.stopPropagation(); toggleHomeAttributeFilter(${a.attribute_id})">${a.attribute_name}</span>`;
+                    }).join(' ')
+                    : '';
+                return `
+                <div class="item-card fade-in">
+                    <img src="/uploads/${item.images}" class="item-card-img"
+                        onclick="showImageModal('${item.images}')"
+                        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e9ecef%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-size=%2212%22>无图片</text></svg>'" alt="${item.name}">
                     <div class="item-card-body">
                         <div class="item-card-title">${item.name}</div>
-                        <div class="item-card-category">${item.category_name || '未分类'}</div>
-                        ${item.attributes && item.attributes.length ? `<div class="item-card-attrs">${item.attributes.slice(0, 3).map(a => `<span class="item-attr">${a.attribute_name}</span>`).join('')}</div>` : ''}
+                        <div class="item-card-tags">
+                            <span class="tag cat-color-${catColorIdx} tag-clickable text-white" onclick="event.stopPropagation(); toggleHomeCategoryFilter(${item.category_id})">${item.category_name || '未分类'}</span>
+                            ${attrTags}
+                        </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
+        }
+
+        function updateHomeFilterUI() {
+            const hasFilter = (homeFilter.categories && homeFilter.categories.length > 0) || 
+                            (homeFilter.attributes && homeFilter.attributes.length > 0) || 
+                            homeFilter.keyword !== '';
+            document.getElementById('clearHomeFilterBtn').style.display = hasFilter ? 'block' : 'none';
+            renderHomeFilterTags();
+        }
+
+        function renderHomeFilterTags() {
+            const container = document.getElementById('homeFilterTags');
+            const tags = [];
+            homeFilter.categories.forEach(catId => {
+                const cat = categories.find(c => c.id === catId);
+                if (cat) {
+                    const catColorIdx = stringHash(cat.name) % 8;
+                    tags.push(`<span class="tag cat-color-${catColorIdx} text-white" style="padding:0.2rem 0.5rem"><span>${cat.name}</span><span class="filter-tag-remove ms-1" onclick="toggleHomeCategoryFilter(${catId})"><i class="bi bi-x"></i></span></span>`);
+                }
+            });
+            homeFilter.attributes.forEach(attrId => {
+                const attr = attributes.find(a => a.id === attrId);
+                if (attr) {
+                    const attrColorIdx = stringHash(attr.name) % 8;
+                    tags.push(`<span class="tag attr-color-${attrColorIdx} text-white" style="padding:0.2rem 0.5rem"><span>${attr.name}</span><span class="filter-tag-remove ms-1" onclick="toggleHomeAttributeFilter(${attrId})"><i class="bi bi-x"></i></span></span>`);
+                }
+            });
+            if (homeFilter.keyword) {
+                tags.push(`<span class="filter-tag keyword"><span>关键词: ${homeFilter.keyword}</span><span class="filter-tag-remove" onclick="removeHomeKeywordFilter()"><i class="bi bi-x"></i></span></span>`);
+            }
+            if (tags.length > 0) {
+                container.innerHTML = `<div class="filter-tags">${tags.join('')}</div>`;
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function removeHomeKeywordFilter() {
+            homeFilter.keyword = '';
+            const se = document.getElementById('searchInputHome');
+            if (se) se.value = '';
+            loadItems(homeFilter);
+            updateHomeFilterUI();
+        }
+
+        function clearHomeFilters() {
+            homeFilter.categories = [];
+            homeFilter.attributes = [];
+            homeFilter.keyword = '';
+            const se = document.getElementById('searchInputHome');
+            if (se) se.value = '';
+            renderCategorySelectors();
+            renderFilterAttributes();
+            loadItems(homeFilter);
+            updateHomeFilterUI();
+        }
+
+        function showImageModal(imageFile) {
+            document.getElementById('imageModalImg').src = '/uploads/' + imageFile;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
         }
 
         function renderCategoryList() {
             const list = document.getElementById('categoryList');
             if (categories.length === 0) { list.innerHTML = '<div class="empty-state"><i class="bi bi-folder"></i><p>暂无类别</p></div>'; return; }
-            list.innerHTML = categories.map(c => `
+            list.innerHTML = categories.map(c => {
+                const hasTemplate = c.template_id && c.template_name;
+                return `
                 <div class="admin-card fade-in">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div><strong>${c.name}</strong><span class="text-muted ms-2">模板: ${c.template_name || '未配置'}</span></div>
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="showTemplateConfigModal(${c.id})"><i class="bi bi-sliders"></i> 配置</button>
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="showCategoryModal(${c.id})"><i class="bi bi-pencil"></i></button>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="me-3">
+                            <strong>${c.name}</strong>
+                            ${!hasTemplate ? '<span class="text-danger ms-2">模板未配置</span>' : ''}
+                        </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            ${hasTemplate ? `<button class="btn btn-sm btn-success" onclick="showAddItemModalForCategory(${c.id}, ${c.template_id})"><i class="bi bi-plus-circle"></i> 添加物品</button>` : ''}
+                            <span class="mx-2 text-muted">|</span>
+                            <button class="btn btn-sm btn-outline-primary" onclick="showTemplateConfigModal(${c.id})"><i class="bi bi-sliders"></i> 配置</button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="showCategoryModal(${c.id})"><i class="bi bi-pencil"></i></button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
+
+        let expandedAttrIds = [];
 
         function renderAttributeTree() {
             const tree = document.getElementById('attributeTree');
             const attrTree = buildTree(attributes);
             if (attrTree.length === 0) { tree.innerHTML = '<div class="empty-state"><i class="bi bi-sliders"></i><p>暂无属性</p></div>'; return; }
-            tree.innerHTML = renderTreeNodes(attrTree, 'handleAttributeAction');
+            tree.innerHTML = renderTreeNodes(attrTree, 'handleAttributeAction', 0);
+            // 恢复展开状态
+            expandedAttrIds.forEach(id => {
+                const row = document.querySelector(`[data-row-id="row-${id}"]`);
+                if (row) {
+                    const children = row.parentElement.querySelector(':scope > .tree-children');
+                    if (children) children.style.display = 'block';
+                    const icon = row.querySelector('i.bi-caret-right-fill');
+                    if (icon) icon.classList.replace('bi-caret-right-fill', 'bi-caret-down-fill');
+                }
+            });
+        }
+
+        function toggleAttrTreeRow(el) {
+            const rowId = el.getAttribute('data-row-id');
+            const itemId = rowId ? parseInt(rowId.replace('row-', '')) : null;
+            const children = el.parentElement.querySelector(':scope > .tree-children');
+            if (!children) return;
+            
+            const isExpanded = children.style.display !== 'none';
+            children.style.display = isExpanded ? 'none' : 'block';
+            
+            const icon = el.querySelector(':scope > .tree-expand-icon i');
+            if (icon) {
+                icon.classList.toggle('bi-caret-right-fill');
+                icon.classList.toggle('bi-caret-down-fill');
+            }
+            
+            if (itemId) {
+                const idx = expandedAttrIds.indexOf(itemId);
+                if (isExpanded) {
+                    if (idx >= 0) expandedAttrIds.splice(idx, 1);
+                } else {
+                    if (idx < 0) expandedAttrIds.push(itemId);
+                }
+            }
         }
 
         function buildTree(flatList) {
@@ -759,25 +1353,39 @@
             return roots;
         }
 
-        function renderTreeNodes(nodes, actionHandler) {
-            return nodes.map(n => `
-                <div class="tree-item-wrapper">
-                    <div class="d-flex justify-content-between align-items-center tree-item">
-                        <span>${n.children.length ? '<i class="bi bi-caret-right-fill tree-item-expand" onclick="toggleTreeExpand(this)"></i>' : ''}${n.name}</span>
-                        <div>
+        function renderTreeNodes(nodes, actionHandler, level = 0, rootIndex = 0) {
+            const lv = Math.min(level, 4);
+            return nodes.map((n, idx) => {
+                const rootIdx = level === 0 ? idx : rootIndex;
+                const altClass = level === 0 && rootIdx % 2 === 1 ? ' attr-alt-bg' : '';
+                return `
+                <div>
+                    <div class="tree-row attr-level-${lv}-bg${altClass}" onclick="toggleAttrTreeRow(this)" data-row-id="row-${n.id}" style="cursor:pointer">
+                        <span class="tree-expand-icon" onclick="event.stopPropagation(); toggleAttrTreeRow(this.parentElement)">
+                            ${n.children.length ? '<i class="bi bi-caret-right-fill"></i>' : ''}
+                        </span>
+                        <span class="attr-level-${lv}" style="font-weight:600">${n.name}</span>
+                        <div class="ms-auto d-flex gap-1" onclick="event.stopPropagation()">
                             <button class="btn btn-sm btn-outline-primary" onclick="${actionHandler}(${n.id}, 'edit')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-success" onclick="${actionHandler}(${n.id}, 'add')"><i class="bi bi-plus"></i> 子项</button>
                             <button class="btn btn-sm btn-outline-danger" onclick="${actionHandler}(${n.id}, 'delete')"><i class="bi bi-trash"></i></button>
-                            <button class="btn btn-sm btn-outline-success" onclick="${actionHandler}(${n.id}, 'add')"><i class="bi bi-plus"></i></button>
                         </div>
                     </div>
-                    ${n.children.length ? `<div class="tree-children" style="display:none;">${renderTreeNodes(n.children, actionHandler)}</div>` : ''}
+                    ${n.children.length ? `<div class="tree-children" data-parent="row-${n.id}" style="display:none;">${renderTreeNodes(n.children, actionHandler, level + 1, rootIdx)}</div>` : ''}
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
-        function toggleTreeExpand(el) {
-            const children = el.closest('.tree-item-wrapper').querySelector('.tree-children');
-            if (children) { children.style.display = children.style.display === 'none' ? 'block' : 'none'; el.classList.toggle('bi-caret-right-fill'); el.classList.toggle('bi-caret-down-fill'); }
+        function toggleAttrTreeRow(el) {
+            const children = el.parentElement.querySelector(':scope > .tree-children');
+            if (!children) return;
+            children.style.display = children.style.display === 'none' ? 'block' : 'none';
+            const icon = el.querySelector(':scope > .tree-expand-icon i');
+            if (icon) {
+                icon.classList.toggle('bi-caret-right-fill');
+                icon.classList.toggle('bi-caret-down-fill');
+            }
         }
 
         // 导航
@@ -788,9 +1396,35 @@
             if (pageEl) pageEl.style.display = 'block';
             const menuItem = document.querySelector(`.sidebar-menu-item[data-page="${page}"]`);
             if (menuItem) menuItem.classList.add('active');
+
+            // 控制FAB按钮：仅首页显示
+            const fabBtn = document.getElementById('fabButton');
+            if (fabBtn) {
+                if (page === 'home') fabBtn.style.display = 'block';
+                else fabBtn.style.display = 'none';
+            }
+
+            activeFilter = (page === 'items') ? itemsFilter : homeFilter;
+
             if (page === 'categories') renderCategoryList();
             else if (page === 'attributes') renderAttributeTree();
-            else if (page === 'items') renderItemsManagement();
+            else if (page === 'items') {
+                renderCategorySelectors();
+                renderFilterAttributes();
+                loadItems(itemsFilter);
+                updateItemsFilterUI();
+            } else if (page === 'home') {
+                renderCategorySelectors();
+                renderFilterAttributes();
+                loadItems(homeFilter);
+                updateHomeFilterUI();
+            } else if (page === 'settings') {
+                // 初始化设置页面的值
+                if (currentUser) {
+                    document.getElementById('settingsUsername').value = currentUser.username || '';
+                    document.getElementById('settingsDisplayName').value = currentUser.display_name || '';
+                }
+            }
         }
 
         // 物品操作
@@ -802,6 +1436,17 @@
             document.getElementById('imageUploadZone').classList.remove('has-image');
             document.getElementById('templateSelect').value = '';
             document.getElementById('attributeSelector').innerHTML = '<p class="text-muted">请先选择类别模板</p>';
+            new bootstrap.Modal(document.getElementById('itemModal')).show();
+        }
+
+        function showAddItemModalForCategory(categoryId, templateId) {
+            currentItemId = null; currentItemImages = []; currentTemplateId = templateId; keepAdding = false;
+            document.getElementById('itemModalTitle').textContent = '添加物品';
+            document.getElementById('itemForm').reset();
+            document.getElementById('imageUploadZone').innerHTML = '<i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: #6c757d;"></i><p class="text-muted mb-0">点击上传图片</p>';
+            document.getElementById('imageUploadZone').classList.remove('has-image');
+            document.getElementById('templateSelect').value = templateId;
+            loadTemplateAttributes();
             new bootstrap.Modal(document.getElementById('itemModal')).show();
         }
 
@@ -897,8 +1542,10 @@
                     document.getElementById('imageUploadZone').classList.remove('has-image');
                     document.querySelectorAll('.attr-item.selected').forEach(el => el.classList.remove('selected'));
                     loadItems();
+                    keepAdding = false;
                 } else {
-                    bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('itemModal'));
+                    modal.hide();
                     loadItems();
                 }
             } else showToast(result.message, 'error');
@@ -1026,8 +1673,6 @@
         // 模板配置
         async function showTemplateConfigModal(categoryId) {
             document.getElementById('templateCategoryId').value = categoryId;
-            const cat = categories.find(c => c.id === categoryId);
-            if (cat) document.getElementById('templateNameInput').value = cat.template_name || '';
             showLoading();
             const result = await api(`/categories/${categoryId}/template`);
             hideLoading();
@@ -1043,27 +1688,65 @@
             const attrTree = buildTree(attributes);
             container.innerHTML = `
                 <div class="mb-2 text-muted small">选择要添加到模板的属性，并勾选是否必填：</div>
-                ${renderTemplateAttrTree(attrTree, templateAttrs)}
+                ${renderTemplateAttrTree(attrTree, templateAttrs, 0)}
             `;
         }
 
-        function renderTemplateAttrTree(nodes, templateAttrs) {
+        function renderTemplateAttrTree(nodes, templateAttrs, level = 0) {
+            const lv = Math.min(level, 4);
             return nodes.map(n => {
                 const ta = templateAttrs.find(t => t.attribute_id === n.id);
                 const isSelected = ta !== undefined;
                 const isRequired = ta && ta.is_required;
+                const hasChildren = n.children && n.children.length;
+                const isFirstLevel = level === 0;
+
+                let expandIcon = '';
+                if (hasChildren) {
+                    expandIcon = `<span class="tree-expand-icon" onclick="event.stopPropagation(); toggleTplNode(this.parentElement)"><i class="bi bi-caret-right-fill"></i></span>`;
+                } else {
+                    expandIcon = '<span class="tree-expand-placeholder"></span>';
+                }
+
+                let requiredHtml = '';
+                if (isFirstLevel) {
+                    requiredHtml = `<label class="small text-muted mb-0 ms-auto me-2" onclick="event.stopPropagation()">
+                        <input type="checkbox" class="tpl-attr-required" ${isRequired ? 'checked' : ''}
+                            ${isSelected ? '' : 'disabled'}
+                            onclick="event.stopPropagation()"
+                            data-required-id="${n.id}"> 必填
+                    </label>`;
+                }
+
                 return `
-                    <div class="attr-group">
-                        <div class="attr-group-header" onclick="toggleAttrGroup(this)">
-                            <input type="checkbox" class="me-2" ${isSelected ? 'checked' : ''} onchange="toggleTemplateAttr(this)" data-id="${n.id}">
-                            ${n.name}
-                            <label class="ms-2 small"><input type="checkbox" ${isRequired ? 'checked' : ''} data-required-id="${n.id}"> 必填</label>
-                            ${n.children.length ? '<i class="bi bi-chevron-down float-end"></i>' : ''}
+                    <div style="margin-left:${level * 16}px" class="my-1">
+                        <div class="d-flex align-items-center p-2 rounded attr-level-${lv}-bg" onclick="toggleTplNode(this)" style="cursor:pointer">
+                            <input type="checkbox" class="tpl-attr-checkbox me-2" ${isSelected ? 'checked' : ''}
+                                onchange="toggleTemplateAttr(this); event.stopPropagation();" onclick="event.stopPropagation()"
+                                data-id="${n.id}">
+                            ${expandIcon}
+                            <span class="attr-level-${lv}">${n.name}</span>
+                            ${requiredHtml}
                         </div>
-                        ${n.children.length ? `<div class="attr-group-items">${renderTemplateAttrTree(n.children, templateAttrs)}</div>` : ''}
+                        ${hasChildren ? `<div class="tpl-children" style="display:none">${renderTemplateAttrTree(n.children, templateAttrs, level + 1)}</div>` : ''}
                     </div>
                 `;
             }).join('');
+        }
+
+        function toggleTplNode(el) {
+            // 查找当前行下面的 tpl-children
+            const children = el.parentElement.querySelector(':scope > .tpl-children');
+            if (!children) return;
+
+            const isExpanded = children.style.display !== 'none';
+            children.style.display = isExpanded ? 'none' : 'block';
+
+            const icon = el.querySelector(':scope > .tree-expand-icon i');
+            if (icon) {
+                icon.classList.toggle('bi-caret-right-fill');
+                icon.classList.toggle('bi-caret-down-fill');
+            }
         }
 
         function toggleTemplateAttr(el) {
@@ -1073,7 +1756,6 @@
 
         async function saveTemplateConfig() {
             const categoryId = document.getElementById('templateCategoryId').value;
-            const templateName = document.getElementById('templateNameInput').value.trim();
             const attrs = [];
             document.querySelectorAll('#templateAttributeSelector input[type="checkbox"]:not([data-required-id])').forEach(el => {
                 if (el.checked) {
@@ -1082,7 +1764,7 @@
                 }
             });
             showLoading();
-            const result = await api(`/categories/${categoryId}/template`, { method: 'PUT', body: { template_name: templateName, attributes: attrs } });
+            const result = await api(`/categories/${categoryId}/template`, { method: 'PUT', body: { attributes: attrs } });
             hideLoading();
             if (result.success) { showToast('模板配置保存成功', 'success'); bootstrap.Modal.getInstance(document.getElementById('templateModal')).hide(); loadCategories(); }
             else showToast(result.message, 'error');
@@ -1126,33 +1808,150 @@
         }
 
         async function deleteAttribute(id) {
-            if (!confirm('确定要删除这个属性吗？')) return;
+            const attr = attributes.find(a => a.id === id);
+            if (!attr) return;
+
+            // 检查属性是否被物品使用
+            let usedByItems = [];
+            items.forEach(item => {
+                if (item.attributes && item.attributes.some(a => a.attribute_id === id)) {
+                    usedByItems.push(item.name);
+                }
+            });
+
+            if (usedByItems.length > 0) {
+                const confirmed = confirm(`属性"${attr.name}"已被以下物品使用：\n${usedByItems.slice(0, 5).join('、')}${usedByItems.length > 5 ? '...' : ''}\n\n确定要删除吗？删除后所有物品中该属性将被移除。`);
+                if (!confirmed) return;
+            } else {
+                if (!confirm(`确定要删除属性"${attr.name}"吗？`)) return;
+            }
+
             showLoading();
             const result = await api(`/attributes/${id}`, { method: 'DELETE' });
             hideLoading();
-            if (result.success) { showToast('属性已删除', 'success'); loadAttributes(); }
+            if (result.success) { 
+                showToast('属性已删除', 'success'); 
+                loadAttributes(); 
+                loadItems(); // 刷新物品列表
+            }
             else showToast(result.message, 'error');
         }
 
-        // 筛选
-        function toggleCategoryFilter(catId) {
-            currentCategoryFilter = currentCategoryFilter === catId ? null : catId;
+        // 首页筛选
+        function applyHomeFilters() {
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('filterOffcanvas')).hide();
+            loadItems(homeFilter);
+            updateHomeFilterUI();
+        }
+
+        function clearHomeFilters() {
+            homeFilter.categories = [];
+            homeFilter.attributes = [];
+            homeFilter.keyword = '';
+            const se = document.getElementById('searchInputHome');
+            if (se) se.value = '';
             renderCategorySelectors();
+            renderFilterAttributes();
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('filterOffcanvas')).hide();
+            loadItems(homeFilter);
+            updateHomeFilterUI();
         }
 
-        function applyFilters() {
-            bootstrap.Offcanvas.getInstance(document.getElementById('filterOffcanvas')).hide();
-            loadItems();
+        // 物品管理筛选
+        function applyItemsFilters() {
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('filterOffcanvasItems')).hide();
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
         }
 
-        function clearFilters() {
-            currentCategoryFilter = null;
-            document.getElementById('searchInput').value = '';
-            bootstrap.Offcanvas.getInstance(document.getElementById('filterOffcanvas')).hide();
-            loadItems();
+        function clearItemsFilters() {
+            itemsFilter.categories = [];
+            itemsFilter.attributes = [];
+            itemsFilter.keyword = '';
+            const se = document.getElementById('searchInputItems');
+            if (se) se.value = '';
+            renderCategorySelectors();
+            renderFilterAttributes();
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('filterOffcanvasItems')).hide();
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
         }
 
-        function searchItems() { loadItems(); }
+        // 搜索输入处理（动态）
+        function onSearchInputHome(value) {
+            homeFilter.keyword = (value || '').trim();
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => { 
+                loadItems(homeFilter); 
+                updateHomeFilterUI();
+            }, 300);
+        }
+
+        function onSearchInputItems(value) {
+            itemsFilter.keyword = (value || '').trim();
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => { 
+                loadItems(itemsFilter); 
+                updateItemsFilterUI();
+            }, 300);
+        }
+
+        // 物品管理页面筛选UI
+        function updateItemsFilterUI() {
+            const hasFilter = (itemsFilter.categories && itemsFilter.categories.length > 0) || 
+                            (itemsFilter.attributes && itemsFilter.attributes.length > 0) || 
+                            itemsFilter.keyword !== '';
+            document.getElementById('clearItemsFilterBtn').style.display = hasFilter ? 'block' : 'none';
+            renderItemsFilterTags();
+        }
+
+        function renderItemsFilterTags() {
+            const container = document.getElementById('itemsFilterTags');
+            const tags = [];
+            itemsFilter.categories.forEach(catId => {
+                const cat = categories.find(c => c.id === catId);
+                if (cat) {
+                    const catColorIdx = stringHash(cat.name) % 8;
+                    tags.push(`<span class="tag cat-color-${catColorIdx} text-white" style="padding:0.2rem 0.5rem"><span>${cat.name}</span><span class="filter-tag-remove ms-1" onclick="toggleItemsCategoryFilter(${catId})"><i class="bi bi-x"></i></span></span>`);
+                }
+            });
+            itemsFilter.attributes.forEach(attrId => {
+                const attr = attributes.find(a => a.id === attrId);
+                if (attr) {
+                    const attrColorIdx = stringHash(attr.name) % 8;
+                    tags.push(`<span class="tag attr-color-${attrColorIdx} text-white" style="padding:0.2rem 0.5rem"><span>${attr.name}</span><span class="filter-tag-remove ms-1" onclick="toggleItemsAttributeFilter(${attrId})"><i class="bi bi-x"></i></span></span>`);
+                }
+            });
+            if (itemsFilter.keyword) {
+                tags.push(`<span class="filter-tag keyword"><span>关键词: ${itemsFilter.keyword}</span><span class="filter-tag-remove" onclick="removeItemsKeywordFilter()"><i class="bi bi-x"></i></span></span>`);
+            }
+            if (tags.length > 0) {
+                container.innerHTML = `<div class="filter-tags">${tags.join('')}</div>`;
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function removeItemsKeywordFilter() {
+            itemsFilter.keyword = '';
+            const se = document.getElementById('searchInputItems');
+            if (se) se.value = '';
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
+        }
+
+        function clearItemsFilters() {
+            itemsFilter.categories = [];
+            itemsFilter.attributes = [];
+            itemsFilter.keyword = '';
+            const se = document.getElementById('searchInputItems');
+            if (se) se.value = '';
+            renderCategorySelectors();
+            renderFilterAttributes();
+            loadItems(itemsFilter);
+            updateItemsFilterUI();
+        }
 
         // 设置
         async function changePassword(e) {
@@ -1169,13 +1968,22 @@
             else showToast(result.message, 'error');
         }
 
-        async function updateProfile(e) {
+        async function updateAccount(e) {
             e.preventDefault();
-            const displayName = e.target.querySelector('[name="display_name"]').value.trim();
+            const username = document.getElementById('settingsUsername').value.trim();
+            const displayName = document.getElementById('settingsDisplayName').value.trim();
+            if (username.length < 3) { showToast('用户名至少3位', 'error'); return; }
             showLoading();
-            const result = await api('/auth/profile', { method: 'PUT', body: { display_name: displayName } });
+            const result = await api('/auth/account', { method: 'PUT', body: { username, display_name: displayName } });
             hideLoading();
-            if (result.success) showToast('信息修改成功', 'success');
+            if (result.success) { 
+                showToast('账号信息已更新', 'success'); 
+                if (currentUser) {
+                    currentUser.username = username;
+                    currentUser.display_name = displayName;
+                    document.getElementById('navUsername').textContent = username;
+                }
+            }
             else showToast(result.message, 'error');
         }
 
@@ -1202,7 +2010,130 @@
         function renderItemsManagement() {
             const list = document.getElementById('itemsManagementList');
             if (items.length === 0) { list.innerHTML = '<div class="empty-state"><i class="bi bi-box"></i><p>暂无物品</p></div>'; return; }
-            list.innerHTML = `<div class="admin-card"><table class="table table-hover mb-0"><thead><tr><th>名称</th><th>类别</th><th>属性</th><th>操作</th></tr></thead><tbody>${items.map(item => `<tr><td><img src="/uploads/${item.images}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23e9ecef%22 width=%2240%22 height=%2240%22/></svg>'"><span class="ms-2">${item.name}</span></td><td>${item.category_name || '-'}</td><td>${item.attributes ? item.attributes.map(a => a.attribute_name).join(', ') : '-'}</td><td><button class="btn btn-sm btn-outline-primary" onclick="editItem(${item.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger ms-1" onclick="confirmDeleteItem(${item.id})"><i class="bi bi-trash"></i></button></td></tr>`).join('')}</tbody></table></div>`;
+            const selCount = selectedItemIds.length;
+            list.innerHTML = `
+                <div class="batch-toolbar mb-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <label class="mb-0"><input type="checkbox" onchange="toggleAllItems(this)" ${selCount === items.length ? 'checked' : ''}> 全选</label>
+                        <span class="selected-count">已选 ${selCount} 项</span>
+                        <div class="ms-auto">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openBatchEdit()" ${selCount === 0 ? 'disabled' : ''}><i class="bi bi-tags"></i> 批量编辑属性</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="batchDeleteItems()" ${selCount === 0 ? 'disabled' : ''}><i class="bi bi-trash"></i> 批量删除</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 items-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px; min-width: 40px;"></th>
+                                    <th style="width: 20%; min-width: 120px;">名称</th>
+                                    <th style="width: 15%; min-width: 100px;">类别</th>
+                                    <th style="width: 40%; min-width: 150px;">属性</th>
+                                    <th style="width: 15%; min-width: 100px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>${items.map(item => {
+                                const catColorIdx = stringHash(item.category_name || '') % 8;
+                                const attrTags = (item.attributes && item.attributes.length)
+                                    ? item.attributes.map(a => {
+                                        const attrColorIdx = stringHash(a.attribute_name) % 8;
+                                        return `<span class="tag attr-color-${attrColorIdx} tag-clickable" onclick="toggleItemsAttributeFilter(${a.attribute_id})">${a.attribute_name}</span>`;
+                                    }).join(' ')
+                                    : '<span class="text-muted small">—</span>';
+                                return `<tr>
+                                    <td><input type="checkbox" onchange="toggleItemSelect(${item.id}, this)" ${selectedItemIds.includes(item.id) ? 'checked' : ''}></td>
+                                    <td><img src="/uploads/${item.images}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;cursor:zoom-in" onclick="showImageModal('${item.images}')" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23e9ecef%22 width=%2240%22 height=%2240%22/></svg>'"><span class="ms-2">${item.name}</span></td>
+                                    <td><span class="tag cat-color-${catColorIdx} text-white tag-clickable" onclick="toggleItemsCategoryFilter(${item.category_id})">${item.category_name || '-'}</span></td>
+                                    <td style="line-height:1.8; word-break: break-word;">${attrTags}</td>
+                                    <td><button class="btn btn-sm btn-outline-primary" onclick="editItem(${item.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger ms-1" onclick="confirmDeleteItem(${item.id})"><i class="bi bi-trash"></i></button></td>
+                                </tr>`;
+                            }).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleItemSelect(itemId, checkbox) {
+            if (checkbox.checked) {
+                if (!selectedItemIds.includes(itemId)) selectedItemIds.push(itemId);
+            } else {
+                const idx = selectedItemIds.indexOf(itemId);
+                if (idx >= 0) selectedItemIds.splice(idx, 1);
+            }
+            renderItemsManagement();
+        }
+
+        function toggleAllItems(checkbox) {
+            if (checkbox.checked) selectedItemIds = items.map(i => i.id);
+            else selectedItemIds = [];
+            renderItemsManagement();
+        }
+
+        async function batchDeleteItems() {
+            if (selectedItemIds.length === 0) return;
+            if (!confirm(`确定要删除选中的 ${selectedItemIds.length} 个物品吗？`)) return;
+            showLoading();
+            const result = await api('/items/batch-delete', { method: 'POST', body: { item_ids: selectedItemIds } });
+            hideLoading();
+            if (result.success) {
+                showToast(`已删除 ${selectedItemIds.length} 个物品`, 'success');
+                selectedItemIds = [];
+                loadItems();
+            } else showToast(result.message, 'error');
+        }
+
+        function openBatchEdit() {
+            if (selectedItemIds.length === 0) { showToast('请先选择物品', 'warning'); return; }
+            document.getElementById('batchEditInfo').innerHTML = `已选择 <strong>${selectedItemIds.length}</strong> 个物品，请选择要操作的属性：`;
+            renderBatchAttrSelector();
+            new bootstrap.Modal(document.getElementById('batchEditModal')).show();
+        }
+
+        function renderBatchAttrSelector() {
+            const tree = buildTree(attributes);
+            const container = document.getElementById('batchAttrSelector');
+            if (!tree.length) {
+                container.innerHTML = '<div class="text-muted small">暂无属性</div>';
+                return;
+            }
+            container.innerHTML = renderBatchAttrTree(tree, 0);
+        }
+
+        function renderBatchAttrTree(nodes, level) {
+            const lv = Math.min(level, 4);
+            return nodes.map(n => `
+                <div style="margin-left:${level * 16}px" class="my-1">
+                    <div class="d-flex align-items-center p-2 rounded attr-level-${lv}-bg">
+                        <input type="checkbox" class="batch-attr-checkbox me-2" data-id="${n.id}">
+                        <span class="attr-level-${lv}">${n.name}</span>
+                        ${n.children.length ? `<button type="button" class="btn btn-sm btn-link py-0 px-2 ms-auto" onclick="event.stopPropagation(); toggleTplNode(this)"><i class="bi bi-chevron-down"></i></button>` : ''}
+                    </div>
+                    ${n.children.length ? `<div class="tpl-children">${renderBatchAttrTree(n.children, level + 1)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function batchUpdateAttrs(action) {
+            const attrIds = [];
+            document.querySelectorAll('.batch-attr-checkbox:checked').forEach(el => {
+                attrIds.push(parseInt(el.dataset.id));
+            });
+            if (attrIds.length === 0) { showToast('请选择属性', 'warning'); return; }
+            showLoading();
+            const result = await api('/items/batch-attributes', {
+                method: 'POST',
+                body: { item_ids: selectedItemIds, attribute_ids: attrIds, action: action }
+            });
+            hideLoading();
+            if (result.success) {
+                showToast(result.message || '批量操作成功', 'success');
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('batchEditModal')).hide();
+                selectedItemIds = [];
+                loadItems();
+            } else showToast(result.message, 'error');
         }
 
         async function confirmDeleteItem(itemId) {
@@ -1221,7 +2152,7 @@
             document.getElementById('categoryForm').addEventListener('submit', saveCategory);
             document.getElementById('attributeForm').addEventListener('submit', saveAttribute);
             document.getElementById('passwordForm').addEventListener('submit', changePassword);
-            document.getElementById('profileForm').addEventListener('submit', updateProfile);
+            document.getElementById('accountForm').addEventListener('submit', updateAccount);
             checkAuth();
         });
     </script>
