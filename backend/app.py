@@ -7,6 +7,7 @@ from flask import Flask, send_from_directory, jsonify, request, session
 from flask_cors import CORS
 from models import init_db
 from routes import auth_bp, items_bp, categories_bp, attributes_bp, stats_bp
+from utils.auth_utils import login_required
 
 # 获取当前目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -66,10 +67,8 @@ def create_app():
 
     # 上传图片API
     @app.route('/api/upload', methods=['POST'])
+    @login_required
     def upload_image():
-        if 'user_id' not in session:
-            return jsonify({'success': False, 'message': '未登录'}), 401
-
         from utils.file_utils import save_base64_image
 
         data = request.get_json()
@@ -89,16 +88,36 @@ def create_app():
 
     # 删除图片API
     @app.route('/api/upload/<filename>', methods=['DELETE'])
+    @login_required
     def delete_image(filename):
-        if 'user_id' not in session:
-            return jsonify({'success': False, 'message': '未登录'}), 401
-
         from utils.file_utils import delete_image
 
         if delete_image(filename, UPLOAD_FOLDER):
             return jsonify({'success': True, 'message': '图片删除成功'})
         else:
             return jsonify({'success': False, 'message': '图片删除失败'}), 500
+
+    # 全局错误处理
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({'success': False, 'message': '请求参数错误'}), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({'success': False, 'message': '请求的资源不存在'}), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({'success': False, 'message': '请求方法不允许'}), 405
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({'success': False, 'message': '服务器内部错误'}), 500
+
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        app.logger.error(f'未处理异常: {str(error)}')
+        return jsonify({'success': False, 'message': '服务器处理请求时发生错误'}), 500
 
     return app
 

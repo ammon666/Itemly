@@ -2,24 +2,16 @@
 Itemly 属性路由（替代原来的标签管理）
 """
 from flask import Blueprint, request, jsonify, session
+from utils.auth_utils import login_required
 from models import AttributeModel
 
 attributes_bp = Blueprint('attributes', __name__, url_prefix='/api/attributes')
 
 
-def check_auth():
-    """检查登录状态"""
-    if 'user_id' not in session:
-        return False
-    return True
-
-
 @attributes_bp.route('', methods=['GET'])
+@login_required
 def get_attributes():
     """获取属性列表（树形结构）"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     tree = request.args.get('tree', 'true').lower() == 'true'
     flat = request.args.get('flat', 'false').lower() == 'true'
 
@@ -37,11 +29,9 @@ def get_attributes():
 
 
 @attributes_bp.route('/<int:attribute_id>', methods=['GET'])
+@login_required
 def get_attribute(attribute_id):
     """获取属性详情"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     attribute = AttributeModel.get_by_id(attribute_id)
     if not attribute:
         return jsonify({'success': False, 'message': '属性不存在'}), 404
@@ -56,11 +46,9 @@ def get_attribute(attribute_id):
 
 
 @attributes_bp.route('', methods=['POST'])
+@login_required
 def create_attribute():
     """创建属性"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     data = request.get_json()
     name = data.get('name', '').strip()
     parent_id = data.get('parent_id')
@@ -83,11 +71,9 @@ def create_attribute():
 
 
 @attributes_bp.route('/<int:attribute_id>', methods=['PUT'])
+@login_required
 def update_attribute(attribute_id):
     """更新属性"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     data = request.get_json()
     name = data.get('name', '').strip()
     sort_order = data.get('sort_order')
@@ -108,10 +94,12 @@ def update_attribute(attribute_id):
 
 
 @attributes_bp.route('/<int:attribute_id>', methods=['DELETE'])
+@login_required
 def delete_attribute(attribute_id):
     """删除属性"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
+    attribute = AttributeModel.get_by_id(attribute_id)
+    if not attribute:
+        return jsonify({'success': False, 'message': '属性不存在'}), 404
 
     AttributeModel.delete(attribute_id)
     return jsonify({

@@ -2,27 +2,29 @@
 Itemly 物品路由
 """
 from flask import Blueprint, request, jsonify, session
+from utils.auth_utils import login_required
 from models import ItemModel, TemplateModel, AttributeModel
 
 items_bp = Blueprint('items', __name__, url_prefix='/api/items')
 
 
-def check_auth():
-    """检查登录状态"""
-    if 'user_id' not in session:
-        return False
-    return True
+def get_all_child_ids(attribute_id):
+    """获取属性的所有子属性ID"""
+    result = []
+    children = AttributeModel.get_children(attribute_id)
+    for child in children:
+        result.append(child['id'])
+        result.extend(get_all_child_ids(child['id']))
+    return result
 
 
 @items_bp.route('', methods=['GET'])
+@login_required
 def get_items():
-    """获取物品列表"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
+    """获取物品列表（支持分页）"""
     template_id = request.args.get('template_id', type=int)
     keyword = request.args.get('keyword', '')
-    
+
     # 支持多个类别ID筛选
     category_ids_str = request.args.get('category_ids', '')
     category_ids = []
@@ -31,7 +33,7 @@ def get_items():
             category_ids = [int(x) for x in category_ids_str.split(',') if x.strip()]
         except ValueError:
             category_ids = []
-    
+
     # 支持多个属性ID筛选
     attribute_ids_str = request.args.get('attribute_ids', '')
     attribute_ids = []
@@ -40,6 +42,10 @@ def get_items():
             attribute_ids = [int(x) for x in attribute_ids_str.split(',') if x.strip()]
         except ValueError:
             attribute_ids = []
+
+    # 分页参数
+    page = request.args.get('page', type=int)
+    per_page = request.args.get('per_page', type=int)
 
     # 如果指定了类别ID，先获取模板ID（支持多个类别）
     template_ids = []
@@ -55,21 +61,31 @@ def get_items():
         template_id=template_id,
         template_ids=template_ids if template_ids else None,
         keyword=keyword if keyword else None,
-        attribute_ids=attribute_ids if attribute_ids else None
+        attribute_ids=attribute_ids if attribute_ids else None,
+        page=page,
+        per_page=per_page
     )
 
-    return jsonify({
-        'success': True,
-        'data': items
-    })
+    # 如果使用了分页，返回总数
+    response = {'success': True, 'data': items}
+    if page and per_page:
+        total = ItemModel.count(
+            template_id=template_id,
+            template_ids=template_ids if template_ids else None,
+            keyword=keyword if keyword else None,
+            attribute_ids=attribute_ids if attribute_ids else None
+        )
+        response['total'] = total
+        response['page'] = page
+        response['per_page'] = per_page
+
+    return jsonify(response)
 
 
 @items_bp.route('/<int:item_id>', methods=['GET'])
+@login_required
 def get_item(item_id):
     """获取物品详情"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     item = ItemModel.get_by_id(item_id)
     if not item:
         return jsonify({'success': False, 'message': '物品不存在'}), 404
@@ -81,11 +97,9 @@ def get_item(item_id):
 
 
 @items_bp.route('', methods=['POST'])
+@login_required
 def create_item():
     """创建物品（必须选择模板）"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     data = request.get_json()
     name = data.get('name', '').strip()
     template_id = data.get('template_id')
@@ -107,9 +121,7 @@ def create_item():
     if template and template['attributes']:
         required_attrs = [a for a in template['attributes'] if a['is_required']]
         for req_attr in required_attrs:
-            # 检查是否选择了该属性或其子属性
             attr_id = req_attr['attribute_id']
-            # 获取该属性的所有子属性ID
             all_child_ids = get_all_child_ids(attr_id)
             valid_ids = [attr_id] + all_child_ids
             if not any(aid in valid_ids for aid in attribute_ids):
@@ -133,22 +145,10 @@ def create_item():
     }), 201
 
 
-def get_all_child_ids(attribute_id):
-    """获取属性的所有子属性ID"""
-    result = []
-    children = AttributeModel.get_children(attribute_id)
-    for child in children:
-        result.append(child['id'])
-        result.extend(get_all_child_ids(child['id']))
-    return result
-
-
 @items_bp.route('/<int:item_id>', methods=['PUT'])
+@login_required
 def update_item(item_id):
     """更新物品"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     data = request.get_json()
     name = data.get('name')
     remark = data.get('remark')
@@ -189,11 +189,9 @@ def update_item(item_id):
 
 
 @items_bp.route('/<int:item_id>', methods=['DELETE'])
+@login_required
 def delete_item(item_id):
     """删除物品"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     item = ItemModel.get_by_id(item_id)
     if not item:
         return jsonify({'success': False, 'message': '物品不存在'}), 404
@@ -206,11 +204,9 @@ def delete_item(item_id):
 
 
 @items_bp.route('/batch-delete', methods=['POST'])
+@login_required
 def batch_delete_items():
     """批量删除物品"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     data = request.get_json()
     item_ids = data.get('item_ids', [])
 
@@ -225,15 +221,13 @@ def batch_delete_items():
 
 
 @items_bp.route('/batch-attributes', methods=['POST'])
+@login_required
 def batch_update_attributes():
     """批量为物品添加或移除属性"""
-    if not check_auth():
-        return jsonify({'success': False, 'message': '未登录'}), 401
-
     data = request.get_json()
     item_ids = data.get('item_ids', [])
     attribute_ids = data.get('attribute_ids', [])
-    action = data.get('action', 'add')  # 'add' or 'remove'
+    action = data.get('action', 'add')
 
     if not item_ids or not attribute_ids:
         return jsonify({'success': False, 'message': '请选择物品和属性'}), 400
