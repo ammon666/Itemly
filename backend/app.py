@@ -29,6 +29,11 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET', 'itemly-secret-key-change-in-production')
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+    
+    # Session 配置 - 允许在非 HTTPS 环境下使用（开发环境）
+    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
     # 确保上传目录存在
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
