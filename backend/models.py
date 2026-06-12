@@ -295,13 +295,42 @@ class CategoryModel:
         return True
 
     @staticmethod
-    def delete(category_id):
-        """删除类别（不移除物品，只移除关联）"""
+    def get_or_create_uncategorized():
+        """获取或创建"未分类"类别"""
         conn = get_db()
         try:
             cursor = conn.cursor()
-            # 将物品的分类关联移除（设置为null），但保留物品
-            cursor.execute('UPDATE items SET category_id = NULL WHERE category_id = ?', (category_id,))
+            # 查找未分类
+            cursor.execute("SELECT id, template_id FROM categories WHERE name = '未分类'")
+            row = cursor.fetchone()
+            if row:
+                return {'id': row['id'], 'template_id': row['template_id']}
+            
+            # 创建未分类类别
+            cursor.execute('INSERT INTO categories (name, sort_order) VALUES (?, ?)', ('未分类', -1))
+            category_id = cursor.lastrowid
+            # 创建模板
+            cursor.execute('INSERT INTO templates (name, category_id) VALUES (?, ?)', ('未分类模板', category_id))
+            template_id = cursor.lastrowid
+            conn.commit()
+            return {'id': category_id, 'template_id': template_id}
+        finally:
+            conn.close()
+
+    @staticmethod
+    def delete(category_id):
+        """删除类别（物品转移到未分类）"""
+        # 首先获取或创建未分类
+        uncategorized = CategoryModel.get_or_create_uncategorized()
+        
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            
+            # 将物品转移到未分类
+            cursor.execute('UPDATE items SET template_id = ? WHERE template_id IN (SELECT id FROM templates WHERE category_id = ?)', 
+                          (uncategorized['template_id'], category_id))
+            
             # 删除模板关联
             cursor.execute('DELETE FROM template_attributes WHERE template_id IN (SELECT id FROM templates WHERE category_id = ?)', (category_id,))
             # 删除模板
@@ -611,6 +640,37 @@ class AttributeModel:
             return [dict_from_row(c) for c in children]
         finally:
             conn.close()
+
+    @staticmethod
+    def get_referenced_count(attribute_id):
+        """获取属性被物品引用的数量"""
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            # 获取该属性及其所有子属性的ID列表
+            attr_ids = [attribute_id]
+            attr_ids.extend(AttributeModel._get_all_child_ids(attribute_id))
+            placeholders = ','.join('?' * len(attr_ids))
+            
+            cursor.execute(f'''
+                SELECT COUNT(DISTINCT item_id) as count 
+                FROM item_attributes 
+                WHERE attribute_id IN ({placeholders})
+            ''', attr_ids)
+            result = cursor.fetchone()
+            return result['count'] if result else 0
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _get_all_child_ids(attribute_id):
+        """递归获取属性所有子属性ID"""
+        children = AttributeModel.get_children(attribute_id)
+        result = []
+        for child in children:
+            result.append(child['id'])
+            result.extend(AttributeModel._get_all_child_ids(child['id']))
+        return result
 
 
 class ItemModel:

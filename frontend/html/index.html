@@ -368,9 +368,10 @@ img { display: block; width: 100%; }
 .modal-header { border-bottom: 1px solid var(--border); padding: 14px 16px; }
 .modal-title { font-size: 15px; font-weight: 600; color: var(--ink); }
 .modal-body { padding: 16px; }
-.modal-footer { border-top: 1px solid var(--border); padding: 12px 16px; gap: 8px; }
-.modal-footer .btn { height: 34px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 500; }
-.btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--sub); }
+.modal-footer { border-top: 1px solid var(--border); padding: 12px 16px; gap: 8px; display: flex; align-items: center; }
+.modal-footer .btn { height: 34px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; }
+.modal-footer .btn-primary { height: 34px; padding: 0 14px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; }
+.btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--sub); height: 34px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; }
 .btn-secondary:hover { background: var(--border); }
 .btn-xs {
   width: 26px; height: 26px; border-radius: 6px;
@@ -546,6 +547,13 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
   .nav-right .btn-primary { display: none; }
 }
 
+/* 管理页面响应式 */
+@media (max-width: 900px) {
+  #pageManagement > div[style*="grid"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* App Container */
 .app-container { display: none; }
 .app-container.active { display: block; }
@@ -634,18 +642,15 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
           <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>物品管理
+        </svg>我的物品
       </div>
       <div id="sidebarCategories" style="margin-top:4px;"></div>
     </div>
     <div class="sb-divider"></div>
     <div class="sb-section">
       <div class="sb-label">管理</div>
-      <div class="sb-item" data-page="categories" onclick="navigateTo('categories')">
+      <div class="sb-item" data-page="management" onclick="navigateTo('management')">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>类别管理
-      </div>
-      <div class="sb-item" data-page="attributes" onclick="navigateTo('attributes')">
-        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M7 10v4M10 7h4"/></svg>属性管理
       </div>
       <div class="sb-item" data-page="settings" onclick="navigateTo('settings')">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>设置
@@ -698,6 +703,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
             <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             <span id="editModeBtnText">进入编辑</span>
           </button>
+          <span class="toolbar-sep"></span>
           <button class="sort-btn" id="viewToggleBtn" onclick="toggleViewMode()">
             <svg id="viewToggleIcon" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             <span id="viewToggleText">卡片</span>
@@ -727,57 +733,85 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
     <!-- 物品管理页面 -->
     <!-- 类别管理页面 -->
-    <div id="pageCategories" class="page" style="display:none;">
+    <div id="pageManagement" class="page" style="display:none;">
       <div class="page-title">
         <span>类别管理</span>
-        <button class="btn-primary" onclick="showCategoryModal()">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>添加类别</span>
-        </button>
       </div>
-      <div id="categoryList"></div>
-    </div>
-
-    <!-- 属性管理页面 -->
-    <div id="pageAttributes" class="page" style="display:none;">
-      <div class="page-title">
-        <span>属性管理</span>
-        <button class="btn-primary" onclick="showAttributeModal()">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>添加属性</span>
-        </button>
-      </div>
-      <div class="admin-card">
-        <div id="attributeTree" class="tree-selector"></div>
+      
+      <!-- 左右两栏布局 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        
+        <!-- 左侧：已有类别列表 -->
+        <div class="admin-card">
+          <div class="admin-card-title">已有类别</div>
+          <div id="categoryList"></div>
+        </div>
+        
+        <!-- 右侧：添加类别表单 -->
+        <div class="admin-card">
+          <div class="admin-card-title">添加类别</div>
+          <form id="inlineCategoryForm">
+            <div style="margin-bottom:16px;">
+              <label class="form-label">类别名称</label>
+              <input type="text" id="inlineCategoryName" class="form-control" placeholder="输入类别名称" required style="max-width:300px;">
+            </div>
+            
+            <div style="margin-bottom:16px;">
+              <label class="form-label">
+                属性字段
+                <span style="color:var(--sub);font-size:11px;margin-left:8px;">顶级属性为该类别必填项，可添加多级子属性</span>
+              </label>
+              
+              <!-- 添加属性按钮和输入 -->
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <input type="text" id="inlineNewAttrName" class="form-control" placeholder="属性名称" style="flex:1;max-width:200px;">
+                <button type="button" class="btn-primary" onclick="addInlineAttr()" style="height:34px;">添加顶级属性</button>
+              </div>
+              
+              <!-- 属性列表（树形展示，可编辑删除） -->
+              <div id="inlineAttrTree" style="border:1px solid var(--border);border-radius:8px;padding:12px;background:var(--surface);min-height:60px;">
+                <p style="color:var(--muted);font-size:12px;text-align:center;">暂无属性，请添加</p>
+              </div>
+            </div>
+            
+            <div style="display:flex;gap:8px;">
+              <button type="submit" class="btn-primary" id="inlineCategorySaveBtn" disabled>保存类别</button>
+              <button type="button" class="btn-secondary" onclick="initInlineCategoryForm()">清空重置</button>
+            </div>
+          </form>
+        </div>
+        
       </div>
     </div>
 
     <!-- 设置页面 -->
     <div id="pageSettings" class="page" style="display:none;">
       <div class="page-title"><span>设置</span></div>
-      <div class="admin-card">
-        <div class="admin-card-title">账号信息</div>
-        <form id="accountForm">
-          <div class="mb-3">
-            <label class="form-label">用户名</label>
-            <input type="text" class="form-control" id="settingsUsername" required>
-          </div>
-          <button type="submit" class="btn-primary">保存</button>
-        </form>
-      </div>
-      <div class="admin-card">
-        <div class="admin-card-title">修改密码</div>
-        <form id="passwordForm">
-          <div class="mb-3">
-            <label class="form-label">新密码</label>
-            <input type="password" class="form-control" name="new_password" required minlength="6">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">确认新密码</label>
-            <input type="password" class="form-control" name="confirm_password" required minlength="6">
-          </div>
-          <button type="submit" class="btn-primary">保存</button>
-        </form>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="admin-card">
+          <div class="admin-card-title">账号信息</div>
+          <form id="accountForm">
+            <div class="mb-3">
+              <label class="form-label">用户名</label>
+              <input type="text" class="form-control" id="settingsUsername" required>
+            </div>
+            <button type="submit" class="btn-primary">保存</button>
+          </form>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">修改密码</div>
+          <form id="passwordForm">
+            <div class="mb-3">
+              <label class="form-label">新密码</label>
+              <input type="password" class="form-control" name="new_password" required minlength="6">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">确认新密码</label>
+              <input type="password" class="form-control" name="confirm_password" required minlength="6">
+            </div>
+            <button type="submit" class="btn-primary">保存</button>
+          </form>
+        </div>
       </div>
     </div>
   </main>
@@ -856,7 +890,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
         </div>
         <div class="modal-footer" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-          <button id="saveAndContinueBtn" type="button" class="btn btn-secondary" onclick="saveItemAndContinue()">保存并继续</button>
+          <button id="saveAndContinueBtn" type="button" class="btn btn-secondary" onclick="saveItemAndContinue()" style="background:#F59E0B;color:#fff;border-color:#F59E0B;">保存并继续</button>
           <button type="submit" class="btn-primary">保存</button>
         </div>
       </form>
@@ -889,8 +923,32 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 </div>
 
 <!-- 类别模态框 -->
+<div class="modal fade" id="attrEditModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="attrEditModalTitle">编辑属性</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="attrEditModalParentId">
+        <input type="hidden" id="attrEditModalAttrId">
+        <input type="hidden" id="attrEditModalMode">
+        <div class="mb-3">
+          <label class="form-label" id="attrEditModalLabel">属性名称</label>
+          <input type="text" class="form-control" id="attrEditModalName" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn-primary" onclick="saveAttrEdit()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="categoryModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="categoryModalTitle">添加类别</h5>
@@ -903,10 +961,33 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
             <label class="form-label">类别名称</label>
             <input type="text" class="form-control" name="name" required>
           </div>
+          <div class="mb-3">
+            <label class="form-label">属性字段 <span style="color:var(--danger);font-size:11px;">（至少选择一个）</span></label>
+            <div id="categoryAttributeTree" class="tree-selector" style="max-height:250px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;"></div>
+            <div id="noAttributesWarning" style="display:none;color:#999;font-size:12px;margin-top:8px;">暂无属性</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+              <span>添加新属性</span>
+              <button type="button" class="btn btn-sm" onclick="toggleCategoryAddAttr()" style="background:var(--surface);border:1px solid var(--border);font-size:11px;padding:2px 8px;">
+                <span id="categoryAddAttrToggleText">展开</span>
+              </button>
+            </label>
+            <div id="categoryAddAttrSection" style="display:none;margin-top:8px;">
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <input type="text" id="categoryNewAttrName" class="form-control" placeholder="属性名称" style="flex:1;">
+                <select id="categoryNewAttrParent" class="form-select" style="width:150px;">
+                  <option value="">顶级属性</option>
+                </select>
+                <button type="button" class="btn-primary" onclick="addCategoryNewAttr()" style="height:34px;white-space:nowrap;">添加</button>
+              </div>
+              <div id="categoryNewAttrList" style="margin-top:8px;"></div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="submit" class="btn-primary">保存</button>
+          <button type="submit" class="btn-primary" id="categorySaveBtn">保存</button>
         </div>
       </form>
     </div>
@@ -915,7 +996,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
 <!-- 模板配置模态框 -->
 <div class="modal fade" id="templateModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">配置类别</h5>
@@ -927,9 +1008,38 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
           <label class="form-label">类别名称</label>
           <input type="text" class="form-control" id="templateCategoryName" required>
         </div>
+        
         <div class="mb-3">
-          <label class="form-label">选择属性字段（勾选是否必填）</label>
-          <div id="templateAttributeSelector" class="attr-selector"></div>
+          <label class="form-label">当前属性 <span style="color:var(--muted);font-size:11px;font-weight:normal;">（点击属性名称编辑，点击×删除）</span></label>
+          <div id="templateCurrentAttrs" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--surface);">
+            <p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无属性</p>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+            <span>添加新属性</span>
+            <button type="button" class="btn btn-sm" onclick="toggleTemplateAddAttr()" style="background:var(--surface);border:1px solid var(--border);font-size:11px;padding:2px 8px;">
+              <span id="templateAddAttrToggleText">展开</span>
+            </button>
+          </label>
+          <div id="templateAddAttrSection" style="display:none;margin-top:8px;">
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <input type="text" id="templateNewAttrName" class="form-control" placeholder="属性名称" style="flex:1;">
+              <select id="templateNewAttrParent" class="form-select" style="width:150px;">
+                <option value="">顶级属性</option>
+              </select>
+              <button type="button" class="btn-primary" onclick="addTemplateNewAttr()" style="height:34px;white-space:nowrap;">添加</button>
+            </div>
+            <div id="templateNewAttrList" style="margin-top:8px;"></div>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">从已有属性选择</label>
+          <div id="templateExistingAttrs" style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--surface);">
+            <p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无可用属性</p>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1156,10 +1266,15 @@ function toggleEditMode() {
     editMode = !editMode;
     const btn = document.getElementById('editModeBtn');
     const btnText = document.getElementById('editModeBtnText');
-    // 编辑模式：用中性/主题色，避免红色警告色
-    // 非编辑模式：保持默认主题蓝；编辑模式：使用蓝紫色「次要色」，明显但不刺眼
     if (editMode) {
-        if (btn) btn.style.background = 'var(--accent-2, #6366F1)';
+        // 进入编辑模式：自动切换到列表模式
+        if (viewMode !== 'list') {
+            setViewMode('list');
+        } else {
+            // 已经是列表模式，直接渲染
+            renderItems();
+        }
+        if (btn) btn.style.background = '#22C55E'; // 清新的绿色
         if (btnText) btnText.textContent = '退出编辑';
         showToast('已进入编辑模式');
     } else {
@@ -1167,8 +1282,8 @@ function toggleEditMode() {
         if (btnText) btnText.textContent = '进入编辑';
         selectedItemIds = [];
         showToast('已退出编辑模式');
+        renderItems();
     }
-    loadItems();
     updateBatchButtons();
 }
 
@@ -1236,7 +1351,10 @@ async function loadCategories() {
             renderSidebarCategories();
             renderFilterCategories();
             const catPage = document.getElementById('pageCategories');
-            if (catPage && catPage.style.display !== 'none') renderCategoryList();
+            const mgmtPage = document.getElementById('pageManagement');
+            if ((catPage && catPage.style.display !== 'none') || (mgmtPage && mgmtPage.style.display !== 'none')) {
+                renderCategoryList();
+            }
         } else categories = [];
     } catch (error) { console.error('加载类别失败:', error); categories = []; }
 }
@@ -1248,7 +1366,10 @@ async function loadAttributes() {
             attributes = result.data || [];
             renderAttributeSelectors();
             const attrPage = document.getElementById('pageAttributes');
-            if (attrPage && attrPage.style.display !== 'none') renderAttributeTree();
+            const mgmtPage = document.getElementById('pageManagement');
+            if ((attrPage && attrPage.style.display !== 'none') || (mgmtPage && mgmtPage.style.display !== 'none')) {
+                renderAttributeTree();
+            }
             renderSidebarAttributes();
         } else attributes = [];
     } catch (error) { console.error('加载属性失败:', error); attributes = []; }
@@ -1343,13 +1464,15 @@ function clearAllFilters() {
 function renderSidebarCategories() {
     const container = document.getElementById('sidebarCategories');
     if (!container) return;
-    if (categories.length === 0) {
+    // 过滤掉未分类
+    const visibleCategories = categories.filter(c => c.name !== '未分类');
+    if (visibleCategories.length === 0) {
         container.innerHTML = '<div class="tree-row" style="opacity:0.5;cursor:default;">暂无类别</div>';
         return;
     }
     const catColors = ['#6366F1','#22C55E','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
     let html = `<div class="tree-row ${!homeFilter.categories.length ? 'active' : ''}" onclick="clearHomeCategoryFilter()"><span class="tree-dot"></span>全部</div>`;
-    html += categories.map(c => {
+    html += visibleCategories.map(c => {
         const isSelected = homeFilter.categories.includes(c.id);
         const colorIdx = stringHash(c.name) % 8;
         return `<div class="tree-row ${isSelected ? 'active' : ''}" onclick="toggleHomeCategoryFilter(${c.id})"><span class="tree-dot" style="background:${catColors[colorIdx]}"></span>${c.name}</div>`;
@@ -1365,13 +1488,15 @@ function renderSidebarAttributes() {
 function renderFilterCategories() {
     const container = document.getElementById('filterCategories');
     if (!container) return;
-    if (categories.length === 0) {
+    // 过滤掉未分类
+    const visibleCategories = categories.filter(c => c.name !== '未分类');
+    if (visibleCategories.length === 0) {
         container.innerHTML = '<div class="tree-row" style="opacity:0.5;cursor:default;">暂无类别</div>';
         return;
     }
     const catColors = ['#6366F1','#22C55E','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];
     let html = `<div class="tree-row ${!homeFilter.categories.length ? 'selected' : ''}" onclick="clearHomeCategoryFilter()"><span class="tree-dot"></span>全部类别</div>`;
-    html += categories.map(c => {
+    html += visibleCategories.map(c => {
         const isSelected = homeFilter.categories.includes(c.id);
         const colorIdx = stringHash(c.name) % 8;
         return `<div class="tree-row ${isSelected ? 'selected' : ''}" onclick="toggleHomeCategoryFilter(${c.id})"><span class="tree-dot" style="background:${catColors[colorIdx]}"></span>${c.name}</div>`;
@@ -1488,8 +1613,10 @@ async function batchUpdateAttrs(action) {
 }
 
 function renderCategorySelectors() {
+    // 过滤掉未分类，只显示普通类别
+    const visibleCategories = categories.filter(c => c.name !== '未分类');
     document.getElementById('templateSelect').innerHTML = '<option value="">请选择类别</option>' +
-        categories.map(c => `<option value="${c.template_id}" data-category-id="${c.id}">${c.name}</option>`).join('');
+        visibleCategories.map(c => `<option value="${c.template_id}" data-category-id="${c.id}">${c.name}</option>`).join('');
 }
 
 function renderAttributeSelectors() {
@@ -1632,11 +1759,13 @@ function renderItemsManagement() {
 
 function renderCategoryList() {
     const list = document.getElementById('categoryList');
-    if (categories.length === 0) {
+    // 过滤掉未分类
+    const visibleCategories = categories.filter(c => c.name !== '未分类');
+    if (visibleCategories.length === 0) {
         list.innerHTML = `<div class="empty"><div class="empty-icon"><svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h7"/></svg></div><div class="empty-title">暂无类别</div></div>`;
         return;
     }
-    list.innerHTML = categories.map(c => {
+    list.innerHTML = visibleCategories.map(c => {
         const hasTemplate = c.template_id && c.template_name;
         return `
         <div class="admin-card">
@@ -1648,7 +1777,7 @@ function renderCategoryList() {
                 <div style="display:flex;gap:6px;">
                     ${hasTemplate ? `<button class="btn-primary" style="height:28px;font-size:11px;" onclick="showAddItemModalForCategory(${c.id},${c.template_id || 'null'})">+ 添加物品</button>` : ''}
                     <button class="btn-primary" style="height:28px;font-size:11px;background:var(--surface);color:var(--sub);" onclick="showTemplateConfigModal(${c.id})">配置</button>
-                    <button class="btn btn-outline-danger" style="height:28px;font-size:11px;" onclick="deleteCategory(${c.id})">删除</button>
+                    <button class="btn btn-outline-danger" style="height:28px;font-size:11px;" onclick="confirmDeleteCategory(${c.id}, '${c.name}')">删除</button>
                 </div>
             </div>
         </div>
@@ -1661,7 +1790,7 @@ let expandedAttrIds = [];
 function renderAttributeTree() {
     const tree = document.getElementById('attributeTree');
     const attrTree = buildTree(attributes);
-    if (attrTree.length === 0) { tree.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>暂无属性</div>'; return; }
+    if (attrTree.length === 0) { tree.innerHTML = `<div class="empty"><div class="empty-icon"><svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div><div class="empty-title">暂无属性</div></div>`; return; }
     tree.innerHTML = renderTreeNodes(attrTree, 'handleAttributeAction', 0);
     expandedAttrIds.forEach(id => {
         const row = document.querySelector(`[data-row-id="row-${id}"]`);
@@ -1698,19 +1827,25 @@ function renderTreeNodes(nodes, actionHandler, level = 0, rootIndex = 0) {
     return nodes.map((n, idx) => {
         const rootIdx = level === 0 ? idx : rootIndex;
         const altClass = level === 0 && rootIdx % 2 === 1 ? ' style="background:var(--surface)"' : '';
+        const isExpanded = expandedAttrIds.includes(n.id);
+        const folderIcon = n.children.length 
+            ? (isExpanded 
+                ? '<path d="M20 20H4V10L10 4h10v16zM16 6l-2 2-2-2H6v12h12V6z"/>' 
+                : '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>')
+            : '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6M16 13H8M16 17H8"/>';
         return `
         <div>
             <div class="tree-row" onclick="toggleAttrTreeRow(this)" data-row-id="row-${n.id}"${altClass} style="cursor:pointer;padding-left:${24 + level * 16}px">
-                <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="var(--sub)" stroke-width="2" style="margin-right:6px;flex-shrink:0;">${n.children.length ? (expandedAttrIds.includes(n.id) ? '<path d="M6 9l6 6 6-6"/>' : '<path d="M12 5l-6 6 6 6"/>') : ''}</svg>
-                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" style="margin-right:6px;flex-shrink:0;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="var(--sub)" stroke-width="2" style="margin-right:6px;flex-shrink:0;">${n.children.length ? (isExpanded ? '<path d="M6 9l6 6 6-6"/>' : '<path d="M12 5l-6 6 6 6"/>') : ''}</svg>
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" style="margin-right:6px;flex-shrink:0;">${folderIcon}</svg>
                 <span style="font-weight:${level === 0 ? 600 : 400}">${n.name}</span>
                 <div style="margin-left:auto;display:flex;gap:4px;">
+                    <button class="btn-xs" style="background:var(--accent);color:#fff;border-color:var(--accent);" onclick="event.stopPropagation();${actionHandler}(${n.id},'add')"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
                     <button class="btn-xs" onclick="event.stopPropagation();${actionHandler}(${n.id},'edit')"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button class="btn-xs" onclick="event.stopPropagation();${actionHandler}(${n.id},'add')"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
                     <button class="btn-xs btn-danger" onclick="event.stopPropagation();${actionHandler}(${n.id},'delete')"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
                 </div>
             </div>
-            ${n.children.length ? `<div class="tree-children" data-parent="row-${n.id}" style="display:${expandedAttrIds.includes(n.id) ? 'block' : 'none'};">${renderTreeNodes(n.children, actionHandler, level + 1, rootIdx)}</div>` : ''}
+            ${n.children.length ? `<div class="tree-children" data-parent="row-${n.id}" style="display:${isExpanded ? 'block' : 'none'};">${renderTreeNodes(n.children, actionHandler, level + 1, rootIdx)}</div>` : ''}
         </div>
         `;
     }).join('');
@@ -1731,7 +1866,11 @@ function navigateTo(page) {
         if (homeSearch) homeSearch.value = '';
     }
     activeFilter = homeFilter;
-    if (page === 'categories') renderCategoryList();
+    if (page === 'management') {
+        initInlineCategoryForm();
+        renderCategoryList();
+    }
+    else if (page === 'categories') renderCategoryList();
     else if (page === 'attributes') renderAttributeTree();
     else if (page === 'home') { renderCategorySelectors(); loadItems(homeFilter); updateFilterChips(); }
     else if (page === 'settings') {
@@ -1739,6 +1878,261 @@ function navigateTo(page) {
     }
     closeSidebar();
 }
+
+// 内嵌类别表单相关函数
+window.inlineSelectedAttrs = [];
+window.editingCategoryId = null;
+
+function initInlineCategoryForm() {
+    window.inlineSelectedAttrs = [];
+    window.editingCategoryId = null;
+    document.getElementById('inlineCategoryName').value = '';
+    document.getElementById('inlineNewAttrName').value = '';
+    renderInlineAttrTree();
+    updateInlineSaveBtn();
+}
+
+function addInlineAttr() {
+    const nameInput = document.getElementById('inlineNewAttrName');
+    const name = nameInput.value.trim();
+    
+    if (!name) {
+        showToast('请输入属性名称', 'error');
+        return;
+    }
+    
+    // 检查是否与已有顶级属性重名
+    if (attributes.some(a => !a.parent_id && a.name === name)) {
+        showToast('已有顶级属性同名', 'error');
+        return;
+    }
+    
+    // 检查当前已添加的顶级属性中是否重名
+    const topLevelSelected = window.inlineSelectedAttrs.filter(a => !a.parent_id);
+    if (topLevelSelected.some(a => a.name === name)) {
+        showToast('已添加同名顶级属性', 'error');
+        return;
+    }
+    
+    const newAttr = {
+        tempId: 'new_' + Date.now(),
+        name: name,
+        parent_id: null,
+        parent_name: ''
+    };
+    window.inlineSelectedAttrs.push(newAttr);
+    
+    nameInput.value = '';
+    nameInput.focus();
+    
+    renderInlineAttrTree();
+    updateInlineSaveBtn();
+}
+
+function renderInlineAttrTree() {
+    const container = document.getElementById('inlineAttrTree');
+    if (window.inlineSelectedAttrs.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;">暂无属性，请添加</p>';
+        return;
+    }
+    
+    const topLevelAttrs = window.inlineSelectedAttrs.filter(a => !a.parent_id);
+    
+    function renderNode(attr, level = 0) {
+        const indent = level * 20;
+        const id = attr.tempId || attr.id;
+        const children = window.inlineSelectedAttrs.filter(a => a.parent_id === id);
+        const isTopLevel = level === 0;
+        
+        let html = `
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-left:${indent}px;background:var(--white);border-radius:4px;margin-bottom:4px;border:1px solid var(--border);">
+                <span style="flex:1;font-size:13px;">
+                    ${isTopLevel ? '<strong>' + attr.name + '</strong>' : attr.name}
+                    ${isTopLevel ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">必填</span>' : ''}
+                </span>
+                <div style="display:flex;gap:4px;">
+                    <button type="button" onclick="addChildAttr('${id}')" title="添加子属性" style="background:none;border:none;color:var(--success);cursor:pointer;font-size:14px;padding:2px 6px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </button>
+                    <button type="button" onclick="editInlineAttrName('${id}')" title="编辑属性" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:14px;padding:2px 6px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+                    <button type="button" onclick="removeInlineAttr('${id}')" title="删除属性" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:2px 6px;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        children.forEach(child => {
+            html += renderNode(child, level + 1);
+        });
+        
+        return html;
+    }
+    
+    container.innerHTML = topLevelAttrs.map(attr => renderNode(attr)).join('');
+}
+
+function addChildAttr(parentId) {
+    const parentAttr = window.inlineSelectedAttrs.find(a => (a.tempId || a.id) === parentId);
+    if (!parentAttr) return;
+    
+    document.getElementById('attrEditModalTitle').textContent = `添加"${parentAttr.name}"的子属性`;
+    document.getElementById('attrEditModalLabel').textContent = '子属性名称';
+    document.getElementById('attrEditModalParentId').value = parentId;
+    document.getElementById('attrEditModalAttrId').value = '';
+    document.getElementById('attrEditModalMode').value = 'add';
+    document.getElementById('attrEditModalName').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('attrEditModal'));
+    modal.show();
+    
+    setTimeout(() => {
+        document.getElementById('attrEditModalName').focus();
+    }, 150);
+}
+
+function editInlineAttrName(attrId) {
+    const attr = window.inlineSelectedAttrs.find(a => (a.tempId || a.id) === attrId);
+    if (!attr) return;
+    
+    document.getElementById('attrEditModalTitle').textContent = '编辑属性';
+    document.getElementById('attrEditModalLabel').textContent = '属性名称';
+    document.getElementById('attrEditModalParentId').value = attr.parent_id || '';
+    document.getElementById('attrEditModalAttrId').value = attrId;
+    document.getElementById('attrEditModalMode').value = 'edit';
+    document.getElementById('attrEditModalName').value = attr.name;
+    
+    const modal = new bootstrap.Modal(document.getElementById('attrEditModal'));
+    modal.show();
+    
+    setTimeout(() => {
+        const input = document.getElementById('attrEditModalName');
+        input.focus();
+        input.select();
+    }, 150);
+}
+
+function saveAttrEdit() {
+    const name = document.getElementById('attrEditModalName').value.trim();
+    const parentId = document.getElementById('attrEditModalParentId').value;
+    const attrId = document.getElementById('attrEditModalAttrId').value;
+    const mode = document.getElementById('attrEditModalMode').value;
+    
+    if (!name) {
+        showToast('请输入属性名称', 'error');
+        return;
+    }
+    
+    if (mode === 'add') {
+        // 添加子属性
+        const parentAttr = window.inlineSelectedAttrs.find(a => (a.tempId || a.id) === parentId);
+        if (!parentAttr) {
+            showToast('父属性不存在', 'error');
+            return;
+        }
+        
+        const sameLevelAttrs = window.inlineSelectedAttrs.filter(a => a.parent_id === parentId);
+        if (sameLevelAttrs.some(a => a.name === name)) {
+            showToast('同级已存在同名属性', 'error');
+            return;
+        }
+        
+        const newAttr = {
+            tempId: 'new_' + Date.now(),
+            name: name,
+            parent_id: parentId,
+            parent_name: parentAttr.name
+        };
+        window.inlineSelectedAttrs.push(newAttr);
+        
+        showToast('子属性已添加', 'success');
+    } else if (mode === 'edit') {
+        // 编辑属性
+        const attr = window.inlineSelectedAttrs.find(a => (a.tempId || a.id) === attrId);
+        if (!attr) {
+            showToast('属性不存在', 'error');
+            return;
+        }
+        
+        if (name === attr.name) {
+            // 名称未改变
+            bootstrap.Modal.getInstance(document.getElementById('attrEditModal')).hide();
+            return;
+        }
+        
+        const sameLevelAttrs = window.inlineSelectedAttrs.filter(a => 
+            (a.parent_id === attr.parent_id || (a.parent_id === null && attr.parent_id === null)) &&
+            (a.tempId || a.id) !== attrId
+        );
+        if (sameLevelAttrs.some(a => a.name === name)) {
+            showToast('同级已存在同名属性', 'error');
+            return;
+        }
+        
+        attr.name = name;
+        
+        showToast('属性已更新', 'success');
+    }
+    
+    renderInlineAttrTree();
+    updateInlineSaveBtn();
+    
+    bootstrap.Modal.getInstance(document.getElementById('attrEditModal')).hide();
+}
+
+function removeInlineAttr(attrId) {
+    // 删除属性及其所有子属性
+    const toRemove = [attrId];
+    
+    // 递归查找所有子属性
+    function findChildren(parentId) {
+        window.inlineSelectedAttrs.forEach(a => {
+            if (a.parent_id === parentId) {
+                const childId = a.tempId || a.id;
+                toRemove.push(childId);
+                findChildren(childId);
+            }
+        });
+    }
+    findChildren(attrId);
+    
+    // 删除所有找到的属性
+    window.inlineSelectedAttrs = window.inlineSelectedAttrs.filter(a => 
+        !toRemove.includes(a.tempId || a.id)
+    );
+    
+    renderInlineAttrTree();
+    updateInlineSaveBtn();
+}
+
+function updateInlineSaveBtn() {
+    const saveBtn = document.getElementById('inlineCategorySaveBtn');
+    const nameInput = document.getElementById('inlineCategoryName');
+    const hasName = nameInput.value.trim().length > 0;
+    // 必须有顶级属性
+    const hasTopLevelAttrs = window.inlineSelectedAttrs.some(a => !a.parent_id);
+    
+    saveBtn.disabled = !(hasName && hasTopLevelAttrs);
+}
+
+// 为输入框添加实时检测
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const nameInput = document.getElementById('inlineCategoryName');
+        if (nameInput) {
+            nameInput.addEventListener('input', updateInlineSaveBtn);
+        }
+    }, 100);
+});
 
 function showAddItemModal() {
     currentItemId = null; currentItemImages = []; currentTemplateId = null; keepAdding = false;
@@ -1766,31 +2160,43 @@ function showAddItemModalForCategory(categoryId, templateId) {
 
 async function loadTemplateAttributes() {
     const templateId = document.getElementById('templateSelect').value;
-    if (!templateId) { document.getElementById('attributeSelector').innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">请先选择类别模板</p>'; return; }
+    if (!templateId) { 
+        document.getElementById('attributeSelector').innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">请先选择类别模板</p>'; 
+        return; 
+    }
     currentTemplateId = templateId;
-    showLoading();
     const categoryOption = document.getElementById('templateSelect').selectedOptions[0];
     const categoryId = categoryOption.dataset.categoryId;
+    
     const result = await api(`/categories/${categoryId}/template`);
-    hideLoading();
-    if (result.success && result.data.attributes) {
-        const attrs = result.data.attributes;
-        const container = document.getElementById('attributeSelector');
-        const grouped = {};
-        attrs.forEach(a => {
-            const groupName = a.category_name || '未分类';
-            if (!grouped[groupName]) grouped[groupName] = [];
-            grouped[groupName].push(a);
-        });
-        container.innerHTML = Object.entries(grouped).map(([catName, items]) => `
-            <div class="attr-group">
-                <div class="attr-group-header">${catName}</div>
-                <div class="attr-group-items show">
-                    ${items.map(a => `<div class="attr-item" data-attr-id="${a.id}" onclick="toggleAttrSelection(this,${a.id})">${a.name || a.attribute_name || '未命名'}${a.is_required ? ' <span style="color:var(--danger)">*</span>' : ''}</div>`).join('')}
-                </div>
-            </div>
-        `).join('');
+    
+    if (!result.success || !result.data || !result.data.attributes || result.data.attributes.length === 0) {
+        document.getElementById('attributeSelector').innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">该类别暂无属性配置</p>';
+        return;
     }
+    
+    const attrs = result.data.attributes;
+    const container = document.getElementById('attributeSelector');
+    const grouped = {};
+    attrs.forEach(a => {
+        const groupName = a.category_name || '未分类';
+        if (!grouped[groupName]) grouped[groupName] = [];
+        grouped[groupName].push(a);
+    });
+    
+    if (Object.keys(grouped).length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">该类别暂无属性配置</p>';
+        return;
+    }
+    
+    container.innerHTML = Object.entries(grouped).map(([catName, items]) => `
+        <div class="attr-group">
+            <div class="attr-group-header">${catName}</div>
+            <div class="attr-group-items show">
+                ${items.map(a => `<div class="attr-item" data-attr-id="${a.id}" onclick="toggleAttrSelection(this,${a.id})">${a.name || a.attribute_name || '未命名'}${a.is_required ? ' <span style="color:var(--danger)">*</span>' : ''}</div>`).join('')}
+            </div>
+        </div>
+    `).join('');
 }
 
 let selectedAttrIds = [];
@@ -1804,21 +2210,37 @@ function toggleAttrSelection(el, attrId) {
 async function handleImageSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
+    const zone = document.getElementById('imageUploadZone');
+    // 显示上传进度提示
+    zone.innerHTML = `<div style="color:var(--accent);font-size:12px;"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 正在上传...</div>`;
     try {
         const options = { maxSizeMB: 1, maxWidthOrHeight: 1200 };
         const compressedFile = await imageCompression(file, options);
-        const formData = new FormData();
-        formData.append('file', compressedFile);
-        showLoading();
-        const result = await api('/upload', { method: 'POST', body: formData });
-        hideLoading();
-        if (result.success) {
-            currentItemImages = [result.filename];
-            const zone = document.getElementById('imageUploadZone');
-            zone.innerHTML = `<img src="/uploads/${result.filename}" alt="预览">`;
-            zone.classList.add('has-image');
-        } else showToast(result.message || '上传失败', 'error');
-    } catch (error) { hideLoading(); console.error('图片处理失败:', error); showToast('图片处理失败', 'error'); }
+        // 将压缩后的图片转换为 base64 格式
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const base64Data = e.target.result;
+            const result = await api('/upload', { method: 'POST', body: { image: base64Data } });
+            if (result.success) {
+                currentItemImages = [result.data.filename];
+                zone.innerHTML = `<img src="/uploads/${result.data.filename}" alt="预览">`;
+                zone.classList.add('has-image');
+                showToast('图片上传成功', 'success');
+            } else {
+                zone.innerHTML = `<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2 1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><p style="color:var(--muted);font-size:12px;margin-top:8px;">点击上传图片</p>`;
+                showToast(result.message || '上传失败', 'error');
+            }
+        };
+        reader.onerror = function() {
+            zone.innerHTML = `<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2 1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><p style="color:var(--muted);font-size:12px;margin-top:8px;">点击上传图片</p>`;
+            showToast('图片读取失败', 'error');
+        };
+        reader.readAsDataURL(compressedFile);
+    } catch (error) {
+        console.error('图片处理失败:', error);
+        zone.innerHTML = `<svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="var(--muted)" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2 1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><p style="color:var(--muted);font-size:12px;margin-top:8px;">点击上传图片</p>`;
+        showToast('图片处理失败', 'error');
+    }
 }
 
 async function saveItem() {
@@ -1940,50 +2362,436 @@ function showCategoryModal(id = null, name = '') {
     document.getElementById('categoryModalTitle').textContent = id ? '编辑类别' : '添加类别';
     if (id) document.querySelector('#categoryForm input[name="id"]').value = id;
     if (name) document.querySelector('#categoryForm input[name="name"]').value = name;
-    new bootstrap.Modal(document.getElementById('categoryModal')).show();
+    
+    // 初始化新属性相关变量
+    window.categoryNewAttrs = [];
+    document.getElementById('categoryNewAttrName').value = '';
+    document.getElementById('categoryNewAttrList').innerHTML = '';
+    document.getElementById('categoryAddAttrSection').style.display = 'none';
+    document.getElementById('categoryAddAttrToggleText').textContent = '展开';
+    
+    loadCategoryAttributes(id);
+    updateCategoryParentSelect();
+    
+    const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    modal.show();
+    modal._element.addEventListener('shown.bs.modal', function() {
+        document.querySelector('#categoryForm input[name="name"]').focus();
+    }, { once: true });
 }
+
+function toggleCategoryAddAttr() {
+    const section = document.getElementById('categoryAddAttrSection');
+    const toggleText = document.getElementById('categoryAddAttrToggleText');
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        toggleText.textContent = '收起';
+        document.getElementById('categoryNewAttrName').focus();
+    } else {
+        section.style.display = 'none';
+        toggleText.textContent = '展开';
+    }
+}
+
+function updateCategoryParentSelect() {
+    const select = document.getElementById('categoryNewAttrParent');
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">顶级属性</option>' + 
+        attributes.filter(a => !a.parent_id).map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+    select.value = currentVal || '';
+}
+
+function addCategoryNewAttr() {
+    const nameInput = document.getElementById('categoryNewAttrName');
+    const parentSelect = document.getElementById('categoryNewAttrParent');
+    const name = nameInput.value.trim();
+    const parentId = parentSelect.value;
+    
+    if (!name) {
+        showToast('请输入属性名称', 'error');
+        return;
+    }
+    
+    // 检查是否已存在
+    if (attributes.some(a => !parentId && a.name === name) || 
+        window.categoryNewAttrs.some(a => !parentId && a.name === name)) {
+        showToast('属性名称已存在', 'error');
+        return;
+    }
+    
+    // 添加到新属性列表
+    const newAttr = {
+        tempId: 'new_' + Date.now(),
+        name: name,
+        parent_id: parentId ? parseInt(parentId) : null,
+        parent_name: parentId ? attributes.find(a => a.id === parseInt(parentId))?.name || '' : ''
+    };
+    window.categoryNewAttrs.push(newAttr);
+    
+    // 清空输入
+    nameInput.value = '';
+    nameInput.focus();
+    
+    // 更新显示
+    renderCategoryNewAttrs();
+    updateCategorySaveBtn();
+    loadCategoryAttributes();
+}
+
+function renderCategoryNewAttrs() {
+    const container = document.getElementById('categoryNewAttrList');
+    if (window.categoryNewAttrs.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = '<div style="font-size:11px;color:var(--sub);margin-bottom:4px;">待添加属性：</div>' +
+        window.categoryNewAttrs.map((a, idx) => `
+            <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--surface);border-radius:4px;margin-bottom:4px;">
+                <span style="flex:1;">${a.parent_name ? '↳ ' + a.parent_name + ' > ' : ''}${a.name}</span>
+                <button type="button" onclick="removeCategoryNewAttr(${idx})" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:16px;line-height:1;">×</button>
+            </div>
+        `).join('');
+}
+
+function removeCategoryNewAttr(index) {
+    window.categoryNewAttrs.splice(index, 1);
+    renderCategoryNewAttrs();
+    updateCategorySaveBtn();
+}
+
+function loadCategoryAttributes(categoryId = null) {
+    const container = document.getElementById('categoryAttributeTree');
+    const warning = document.getElementById('noAttributesWarning');
+    const saveBtn = document.getElementById('categorySaveBtn');
+    
+    if (attributes.length === 0) {
+        container.innerHTML = '';
+        warning.style.display = 'block';
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+        saveBtn.style.cursor = 'not-allowed';
+        return;
+    }
+    
+    warning.style.display = 'none';
+    
+    let existingAttrs = [];
+    if (categoryId) {
+        const cat = categories.find(c => c.id === categoryId);
+        if (cat && cat.attributes) {
+            existingAttrs = cat.attributes;
+        }
+    }
+    
+    // 构建树形结构
+    const treeMap = {};
+    const roots = [];
+    attributes.forEach(a => { treeMap[a.id] = { ...a, children: [] }; });
+    attributes.forEach(a => {
+        if (a.parent_id && treeMap[a.parent_id]) {
+            treeMap[a.parent_id].children.push(treeMap[a.id]);
+        } else if (!a.parent_id) {
+            roots.push(treeMap[a.id]);
+        }
+    });
+    
+    // 渲染树形选择
+    function renderAttrTree(nodes, level = 0) {
+        return nodes.map(n => {
+            const isSel = existingAttrs.some(e => e.attribute_id === n.id);
+            const indent = level * 16;
+            return `
+                <div class="tree-node" style="padding-left:${indent}px;">
+                    <label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;">
+                        <input type="checkbox" name="category_attrs" value="${n.id}" ${isSel ? 'checked' : ''} onchange="updateCategorySaveBtn()">
+                        ${n.children && n.children.length > 0 
+                            ? `<span onclick="toggleCategoryAttrTree(this)" style="cursor:pointer;color:var(--sub);margin-right:4px;">▶</span>` 
+                            : `<span style="width:16px;margin-right:4px;"></span>`}
+                        <span>${n.name}</span>
+                    </label>
+                    ${n.children && n.children.length > 0 
+                        ? `<div class="tree-children" style="display:none;">${renderAttrTree(n.children, level + 1)}</div>` 
+                        : ''}
+                </div>
+            `;
+        }).join('');
+    }
+    
+    if (roots.length === 0) {
+        container.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无属性</div>';
+        return;
+    }
+    
+    container.innerHTML = renderAttrTree(roots);
+    updateCategorySaveBtn();
+}
+
+function toggleCategoryAttrTree(arrow) {
+    const children = arrow.parentElement.parentElement.querySelector(':scope > .tree-children');
+    if (children) {
+        const isHidden = children.style.display === 'none';
+        children.style.display = isHidden ? 'block' : 'none';
+        arrow.textContent = isHidden ? '▼' : '▶';
+    }
+}
+
+function updateCategorySaveBtn() {
+    const saveBtn = document.getElementById('categorySaveBtn');
+    const checkboxes = document.querySelectorAll('#categoryAttributeTree input[type="checkbox"][name="category_attrs"]');
+    const hasChecked = Array.from(checkboxes).some(cb => cb.checked);
+    const hasNewAttrs = window.categoryNewAttrs && window.categoryNewAttrs.length > 0;
+    
+    if (hasChecked || hasNewAttrs) {
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        saveBtn.style.cursor = 'pointer';
+    } else {
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+        saveBtn.style.cursor = 'not-allowed';
+    }
+}
+
+// 模板配置模态框相关变量
+window.templateNewAttrs = [];
+window.templateExistingAttrs = [];
+window.templateCurrentAttrs = [];
 
 function showTemplateConfigModal(categoryId) {
     const cat = categories.find(c => c.id === categoryId);
     if (!cat) return;
+    window.templateNewAttrs = [];
+    window.templateCurrentAttrs = [];
+    
     document.getElementById('templateCategoryId').value = categoryId;
     document.getElementById('templateCategoryName').value = cat.name;
-    loadTemplateConfigAttributes(categoryId);
+    
+    loadTemplateCurrentAttrs(categoryId);
+    loadTemplateExistingAttrs(categoryId);
+    updateTemplateParentSelect();
+    
     new bootstrap.Modal(document.getElementById('templateModal')).show();
 }
 
-async function loadTemplateConfigAttributes(categoryId) {
+function toggleTemplateAddAttr() {
+    const section = document.getElementById('templateAddAttrSection');
+    const toggleText = document.getElementById('templateAddAttrToggleText');
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        toggleText.textContent = '收起';
+        document.getElementById('templateNewAttrName').focus();
+    } else {
+        section.style.display = 'none';
+        toggleText.textContent = '展开';
+    }
+}
+
+function updateTemplateParentSelect() {
+    // 顶级属性作为可选的父级
+    const topLevelAttrs = attributes.filter(a => !a.parent_id);
+    const select = document.getElementById('templateNewAttrParent');
+    select.innerHTML = '<option value="">顶级属性</option>' + 
+        topLevelAttrs.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+}
+
+function addTemplateNewAttr() {
+    const nameInput = document.getElementById('templateNewAttrName');
+    const parentSelect = document.getElementById('templateNewAttrParent');
+    const name = nameInput.value.trim();
+    const parentId = parentSelect.value;
+    
+    if (!name) {
+        showToast('请输入属性名称', 'error');
+        return;
+    }
+    
+    // 检查是否已存在
+    if (window.templateNewAttrs.some(a => a.name === name && (!parentId && !a.parent_id) || (parentId && a.parent_id && parseInt(parentId) === a.parent_id))) {
+        showToast('属性名称已存在', 'error');
+        return;
+    }
+    
+    const parentName = parentId ? attributes.find(a => a.id === parseInt(parentId))?.name || '' : '';
+    
+    window.templateNewAttrs.push({
+        tempId: 'new_' + Date.now(),
+        name: name,
+        parent_id: parentId ? parseInt(parentId) : null,
+        parent_name: parentName
+    });
+    
+    nameInput.value = '';
+    nameInput.focus();
+    
+    renderTemplateNewAttrs();
+}
+
+function renderTemplateNewAttrs() {
+    const container = document.getElementById('templateNewAttrList');
+    if (window.templateNewAttrs.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = '<div style="font-size:11px;color:var(--sub);margin-bottom:4px;">待添加属性：</div>' +
+        window.templateNewAttrs.map((a, idx) => `
+            <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--accent-bg);border-radius:4px;margin-bottom:4px;">
+                <span style="flex:1;color:var(--accent);">${a.parent_name ? '↳ ' + a.parent_name + ' > ' : ''}${a.name}</span>
+                <button type="button" onclick="removeTemplateNewAttr(${idx})" style="background:none;border:none;color:var(--sub);cursor:pointer;font-size:16px;line-height:1;">×</button>
+            </div>
+        `).join('');
+}
+
+function removeTemplateNewAttr(index) {
+    window.templateNewAttrs.splice(index, 1);
+    renderTemplateNewAttrs();
+}
+
+async function loadTemplateCurrentAttrs(categoryId) {
+    const container = document.getElementById('templateCurrentAttrs');
     showLoading();
     const result = await api(`/categories/${categoryId}/template`);
     hideLoading();
-    if (result.success) {
-        const container = document.getElementById('templateAttributeSelector');
-        const existing = result.data.attributes || [];
-        const grouped = {};
-        attributes.forEach(a => {
-            if (!grouped[a.category_name]) grouped[a.category_name] = [];
-            grouped[a.category_name].push(a);
+    
+    if (result.success && result.data && result.data.attributes) {
+        window.templateCurrentAttrs = result.data.attributes;
+        
+        if (window.templateCurrentAttrs.length === 0) {
+            container.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无属性，请添加新属性</p>';
+            return;
+        }
+        
+        container.innerHTML = window.templateCurrentAttrs.map(a => `
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--white);border-radius:4px;margin-bottom:4px;border:1px solid var(--border);">
+                <span style="flex:1;font-weight:500;">${a.attribute_name}</span>
+                <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub);cursor:pointer;">
+                    <input type="checkbox" ${a.is_required ? 'checked' : ''} onchange="toggleTemplateAttrRequired(this, ${a.attribute_id})">
+                    必填
+                </label>
+                <button type="button" onclick="removeTemplateExistingAttr(${a.attribute_id}, '${a.attribute_name}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;opacity:0.7;">×</button>
+            </div>
+        `).join('');
+    } else {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无属性，请添加新属性</p>';
+    }
+}
+
+function toggleTemplateAttrRequired(checkbox, attrId) {
+    const attr = window.templateCurrentAttrs.find(a => a.attribute_id === attrId);
+    if (attr) {
+        attr.is_required = checkbox.checked;
+    }
+}
+
+async function removeTemplateExistingAttr(attrId, attrName) {
+    // 检查引用
+    const checkResult = await api(`/attributes/${attrId}/check-reference`);
+    if (!checkResult.success || !checkResult.data) {
+        showToast('检查引用失败', 'error');
+        return;
+    }
+    
+    const refCount = checkResult.data.referenced_count || 0;
+    
+    if (refCount > 0) {
+        const confirmed = confirm(
+            `属性"${attrName}"被${refCount}个物品引用。\n\n删除后，相关物品都将移除这个属性值。\n\n确定要继续删除吗？`
+        );
+        if (!confirmed) return;
+    } else {
+        if (!confirm(`确定要从类别中移除属性"${attrName}"吗？`)) return;
+    }
+    
+    // 执行删除（有引用时强制删除）
+    showLoading();
+    const deleteEndpoint = refCount > 0 ? `/attributes/${attrId}/force-delete` : `/attributes/${attrId}`;
+    const deleteResult = await api(deleteEndpoint, { method: 'DELETE' });
+    hideLoading();
+    
+    if (deleteResult.success) {
+        // 从当前属性列表中移除
+        window.templateCurrentAttrs = window.templateCurrentAttrs.filter(a => a.attribute_id !== attrId);
+        renderTemplateCurrentAttrs();
+        loadTemplateExistingAttrs(document.getElementById('templateCategoryId').value);
+        showToast(refCount > 0 ? '属性已删除' : '属性已移除', 'success');
+    } else {
+        showToast(deleteResult.message || '删除失败', 'error');
+    }
+}
+
+function renderTemplateCurrentAttrs() {
+    const container = document.getElementById('templateCurrentAttrs');
+    if (window.templateCurrentAttrs.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无属性，请添加新属性</p>';
+        return;
+    }
+    
+    container.innerHTML = window.templateCurrentAttrs.map(a => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--white);border-radius:4px;margin-bottom:4px;border:1px solid var(--border);">
+            <span style="flex:1;font-weight:500;">${a.attribute_name}</span>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub);cursor:pointer;">
+                <input type="checkbox" ${a.is_required ? 'checked' : ''} onchange="toggleTemplateAttrRequired(this, ${a.attribute_id})">
+                必填
+            </label>
+            <button type="button" onclick="removeTemplateExistingAttr(${a.attribute_id}, '${a.attribute_name}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;opacity:0.7;">×</button>
+        </div>
+    `).join('');
+}
+
+async function loadTemplateExistingAttrs(categoryId) {
+    const container = document.getElementById('templateExistingAttrs');
+    
+    // 获取当前类别模板已有的属性ID
+    const result = await api(`/categories/${categoryId}/template`);
+    const existingAttrIds = result.success && result.data && result.data.attributes 
+        ? result.data.attributes.map(a => a.attribute_id) 
+        : [];
+    
+    // 过滤出不属于当前模板的顶级属性
+    const availableAttrs = attributes.filter(a => 
+        !a.parent_id && !existingAttrIds.includes(a.id)
+    );
+    
+    if (availableAttrs.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">暂无可添加的属性</p>';
+        return;
+    }
+    
+    container.innerHTML = availableAttrs.map(a => `
+        <div style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--white);border-radius:4px;margin:2px;border:1px solid var(--border);">
+            <span style="font-size:12px;">${a.name}</span>
+            <button type="button" onclick="addTemplateExistingAttr(${a.id}, '${a.name}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;line-height:1;opacity:0.8;">+</button>
+        </div>
+    `).join('');
+}
+
+function addTemplateExistingAttr(attrId, attrName) {
+    // 添加到当前属性
+    if (!window.templateCurrentAttrs.some(a => a.attribute_id === attrId)) {
+        window.templateCurrentAttrs.push({
+            attribute_id: attrId,
+            attribute_name: attrName,
+            is_required: true
         });
-        container.innerHTML = Object.entries(grouped).map(([catName, attrs]) => {
-            const selectedInTemplate = existing.filter(e => e.attribute_id === attrs[0]?.attribute_id);
-            const isInTemplate = selectedInTemplate.length > 0;
-            const isRequired = selectedInTemplate[0]?.is_required || false;
-            return `
-            <div class="attr-group">
-                <div class="attr-group-header">${catName}</div>
-                <div class="attr-group-items show">
-                    ${attrs.map(a => {
-                        const isSel = existing.some(e => e.attribute_id === a.id);
-                        const req = existing.find(e => e.attribute_id === a.id)?.is_required || false;
-                        return `<div class="attr-item ${isSel ? 'selected' : ''}" data-attr-id="${a.id}">
-                            <input type="checkbox" ${isSel ? 'checked' : ''} style="margin-right:6px;" onchange="this.parentElement.classList.toggle(&quot;selected&quot;,this.checked)">
-                            ${a.name}
-                            <input type="checkbox" ${req ? 'checked' : ''} style="margin-left:8px;" onchange="this.checked = this.checked">必填
-                        </div>`;
-                    }).join('')}
-                </div>
-            </div>`;
-        }).join('');
+        
+        // 重新渲染当前属性列表
+        const container = document.getElementById('templateCurrentAttrs');
+        container.innerHTML = window.templateCurrentAttrs.map(a => `
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--white);border-radius:4px;margin-bottom:4px;border:1px solid var(--border);">
+                <span style="flex:1;font-weight:500;">${a.attribute_name}</span>
+                <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub);cursor:pointer;">
+                    <input type="checkbox" ${a.is_required ? 'checked' : ''} onchange="toggleTemplateAttrRequired(this, ${a.attribute_id})">
+                    必填
+                </label>
+                <button type="button" onclick="removeTemplateExistingAttr(${a.attribute_id}, '${a.attribute_name}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;opacity:0.7;">×</button>
+            </div>
+        `).join('');
+        
+        // 从可用属性中移除
+        loadTemplateExistingAttrs(document.getElementById('templateCategoryId').value);
+        
+        showToast(`已添加属性"${attrName}"`, 'success');
     }
 }
 
@@ -1991,11 +2799,48 @@ async function saveTemplateConfig() {
     const categoryId = document.getElementById('templateCategoryId').value;
     const name = document.getElementById('templateCategoryName').value.trim();
     if (!name) { showToast('请输入类别名称', 'error'); return; }
-    const attrItems = document.querySelectorAll('#templateAttributeSelector .attr-item.selected');
-    const attributes_config = Array.from(attrItems).map(el => ({
-        attribute_id: parseInt(el.dataset.attrId),
-        is_required: el.querySelector('input[type="checkbox"]:last-of-type')?.checked || false
-    }));
+    
+    // 先创建新的属性
+    const newAttrIds = [];
+    if (window.templateNewAttrs && window.templateNewAttrs.length > 0) {
+        for (const newAttr of window.templateNewAttrs) {
+            const result = await api('/attributes', { 
+                method: 'POST', 
+                body: { name: newAttr.name, parent_id: newAttr.parent_id } 
+            });
+            if (result.success) {
+                newAttrIds.push(result.data.id);
+            } else {
+                showToast('创建属性失败: ' + newAttr.name, 'error');
+                return;
+            }
+        }
+    }
+    
+    // 构建属性配置
+    const attributes_config = [];
+    
+    // 添加已有属性
+    window.templateCurrentAttrs.forEach(a => {
+        attributes_config.push({
+            attribute_id: a.attribute_id,
+            is_required: a.is_required || false
+        });
+    });
+    
+    // 添加新创建属性的ID（默认为必填）
+    newAttrIds.forEach(attrId => {
+        attributes_config.push({
+            attribute_id: attrId,
+            is_required: true
+        });
+    });
+    
+    if (attributes_config.length === 0) {
+        showToast('请至少添加一个属性', 'error');
+        return;
+    }
+    
     showLoading();
     const result = await api(`/categories/${categoryId}/template`, {
         method: 'PUT',
@@ -2005,17 +2850,27 @@ async function saveTemplateConfig() {
     if (result.success) {
         showToast('配置已保存', 'success');
         bootstrap.Modal.getInstance(document.getElementById('templateModal')).hide();
-        loadCategories();
+        await Promise.all([loadCategories(), loadAttributes()]);
     } else showToast(result.message, 'error');
 }
 
 function showAttributeModal(id = null, parentId = null, name = '') {
-    document.getElementById('attributeForm').reset();
+    const form = document.getElementById('attributeForm');
+    form.reset();
+    // 显式清空所有字段，确保不会残留旧数据
+    form.querySelector('input[name="id"]').value = '';
+    document.getElementById('attributeParentSelect').value = '';
     document.getElementById('attributeModalTitle').textContent = id ? '编辑属性' : '添加属性';
-    if (id) document.querySelector('#attributeForm input[name="id"]').value = id;
+    if (id) form.querySelector('input[name="id"]').value = id;
     if (parentId) document.getElementById('attributeParentSelect').value = parentId;
-    if (name) document.querySelector('#attributeForm input[name="name"]').value = name;
-    new bootstrap.Modal(document.getElementById('attributeModal')).show();
+    if (name) form.querySelector('input[name="name"]').value = name;
+    const modal = new bootstrap.Modal(document.getElementById('attributeModal'));
+    modal.show();
+    // 模态框显示后自动聚焦到输入框
+    modal._element.addEventListener('shown.bs.modal', function() {
+        const nameInput = document.querySelector('#attributeForm input[name="name"]');
+        if (nameInput) nameInput.focus();
+    }, { once: true });
 }
 
 function handleAttributeAction(id, action) {
@@ -2023,20 +2878,36 @@ function handleAttributeAction(id, action) {
     if (action === 'edit') showAttributeModal(id, attr?.parent_id, attr?.name);
     else if (action === 'add') showAttributeModal(null, id, '');
     else if (action === 'delete') {
-        if (!confirm('确定要删除这个属性吗？')) return;
-        api(`/attributes/${id}`, { method: 'DELETE' }).then(r => {
-            if (r.success) { showToast('属性已删除', 'success'); loadAttributes(); }
-            else showToast(r.message, 'error');
+        // 检查属性被引用的数量
+        api(`/attributes/${id}`).then(result => {
+            if (result.success && result.data) {
+                const refCount = result.data.referenced_count || 0;
+                if (refCount > 0) {
+                    const confirmed = confirm(
+                        `该属性被${refCount}个物品引用。\n\n删除后，相关物品都将移除这个属性值。\n\n确定要继续删除吗？`
+                    );
+                    if (!confirmed) return;
+                } else {
+                    if (!confirm('确定要删除这个属性吗？')) return;
+                }
+                
+                api(`/attributes/${id}`, { method: 'DELETE' }).then(r => {
+                    if (r.success) { showToast('属性已删除', 'success'); loadAttributes(); }
+                    else showToast(r.message, 'error');
+                });
+            }
         });
     }
 }
 
-async function deleteCategory(id) {
-    if (!confirm('确定要删除这个类别吗？')) return;
-    showLoading();
+async function confirmDeleteCategory(id, name) {
+    if (!confirm(`确定要删除类别"${name}"吗？\n\n删除后，该类别下的所有物品将自动转移到"未分类"分类中。`)) return;
     const result = await api(`/categories/${id}`, { method: 'DELETE' });
-    hideLoading();
-    if (result.success) { showToast('类别已删除', 'success'); loadCategories(); }
+    if (result.success) { 
+        showToast('类别已删除，物品已转移到未分类', 'success'); 
+        await Promise.all([loadCategories(), loadAttributes()]);
+        loadItems();
+    }
     else showToast(result.message, 'error');
 }
 
@@ -2120,11 +2991,75 @@ document.getElementById('categoryForm').addEventListener('submit', async functio
     e.preventDefault();
     const id = document.querySelector('#categoryForm input[name="id"]').value;
     const name = document.querySelector('#categoryForm input[name="name"]').value.trim();
-    showLoading();
+    
+    if (!name) {
+        showToast('请输入类别名称', 'error');
+        return;
+    }
+    
+    const existsCategory = categories.some(c => c.id !== parseInt(id) && c.name === name);
+    if (existsCategory) {
+        showToast('类别名称已存在', 'error');
+        return;
+    }
+    
+    const topLevelAttrs = attributes.filter(a => !a.parent_id);
+    const existsAttr = topLevelAttrs.some(a => a.name === name);
+    if (existsAttr) {
+        showToast('类别名称与顶级属性重名', 'error');
+        return;
+    }
+    
+    const attrCheckboxes = document.querySelectorAll('#categoryAttributeTree input[type="checkbox"][name="category_attrs"]');
+    const selectedAttrs = [];
+    
+    // 先创建新添加的属性
+    const newAttrIds = [];
+    if (window.categoryNewAttrs && window.categoryNewAttrs.length > 0) {
+        for (const newAttr of window.categoryNewAttrs) {
+            const result = await api('/attributes', { 
+                method: 'POST', 
+                body: { name: newAttr.name, parent_id: newAttr.parent_id } 
+            });
+            if (result.success) {
+                newAttrIds.push(result.data.id);
+            } else {
+                showToast('创建属性失败: ' + newAttr.name, 'error');
+                return;
+            }
+        }
+        // 刷新属性列表
+        await loadAttributes();
+    }
+    
+    // 收集已选中的属性
+    attrCheckboxes.forEach(cb => {
+        if (cb.checked) {
+            const attrId = parseInt(cb.value);
+            // 所有选中的属性都默认为必填
+            selectedAttrs.push({
+                attribute_id: attrId,
+                is_required: true
+            });
+        }
+    });
+    
+    // 添加新创建的属性
+    newAttrIds.forEach(attrId => {
+        selectedAttrs.push({
+            attribute_id: attrId,
+            is_required: true
+        });
+    });
+    
+    if (selectedAttrs.length === 0) {
+        showToast('请至少选择一个属性', 'error');
+        return;
+    }
+    
     const result = id
-        ? await api(`/categories/${id}`, { method: 'PUT', body: { name } })
-        : await api('/categories', { method: 'POST', body: { name } });
-    hideLoading();
+        ? await api(`/categories/${id}`, { method: 'PUT', body: { name, attributes: selectedAttrs } })
+        : await api('/categories', { method: 'POST', body: { name, attributes: selectedAttrs } });
     if (result.success) {
         showToast(id ? '类别已更新' : '类别已添加', 'success');
         bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
@@ -2136,17 +3071,148 @@ document.getElementById('attributeForm').addEventListener('submit', async functi
     const id = document.querySelector('#attributeForm input[name="id"]').value;
     const parentId = document.getElementById('attributeParentSelect').value;
     const name = document.querySelector('#attributeForm input[name="name"]').value.trim();
-    showLoading();
+    
+    if (!name) {
+        showToast('请输入属性名称', 'error');
+        return;
+    }
+    
+    if (!parentId) {
+        const existsAttr = attributes.some(a => a.id !== parseInt(id) && !a.parent_id && a.name === name);
+        if (existsAttr) {
+            showToast('顶级属性名称已存在', 'error');
+            return;
+        }
+        
+        const existsCategory = categories.some(c => c.name === name);
+        if (existsCategory) {
+            showToast('属性名称与类别重名', 'error');
+            return;
+        }
+    }
+    
     const result = id
         ? await api(`/attributes/${id}`, { method: 'PUT', body: { name, parent_id: parentId || null } })
         : await api('/attributes', { method: 'POST', body: { name, parent_id: parentId || null } });
-    hideLoading();
     if (result.success) {
         showToast(id ? '属性已更新' : '属性已添加', 'success');
         bootstrap.Modal.getInstance(document.getElementById('attributeModal')).hide();
+        // 如果是添加子属性，自动展开父节点
+        if (!id && parentId) {
+            const parentIdNum = parseInt(parentId);
+            if (!expandedAttrIds.includes(parentIdNum)) {
+                expandedAttrIds.push(parentIdNum);
+            }
+        }
         loadAttributes();
     } else showToast(result.message, 'error');
 });
+
+// 内嵌类别表单提交处理
+document.getElementById('inlineCategoryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('inlineCategoryName').value.trim();
+    
+    if (!name) {
+        showToast('请输入类别名称', 'error');
+        return;
+    }
+    
+    const existsCategory = categories.some(c => c.name === name);
+    if (existsCategory) {
+        showToast('类别名称已存在', 'error');
+        return;
+    }
+    
+    const topLevelAttrs = attributes.filter(a => !a.parent_id);
+    const existsAttr = topLevelAttrs.some(a => a.name === name);
+    if (existsAttr) {
+        showToast('类别名称与顶级属性重名', 'error');
+        return;
+    }
+    
+    // 获取顶级属性
+    const topLevelSelected = window.inlineSelectedAttrs.filter(a => !a.parent_id);
+    if (topLevelSelected.length === 0) {
+        showToast('请至少添加一个顶级属性', 'error');
+        return;
+    }
+    
+    showLoading();
+    
+    // 创建属性的映射表（tempId -> 真实ID）
+    const attrIdMap = {};
+    
+    // 先处理已有属性作为父级的情况
+    attributes.filter(a => !a.parent_id).forEach(a => {
+        attrIdMap['existing_' + a.id] = a.id;
+    });
+    
+    // 按层级创建属性（先创建顶级，再创建子级）
+    // 第一轮：创建所有顶级属性
+    for (const attr of topLevelSelected) {
+        if (attr.tempId) {
+            const result = await api('/attributes', { 
+                method: 'POST', 
+                body: { name: attr.name, parent_id: null } 
+            });
+            if (result.success) {
+                attrIdMap[attr.tempId] = result.data.id;
+            } else {
+                hideLoading();
+                showToast('创建属性失败: ' + attr.name, 'error');
+                return;
+            }
+        }
+    }
+    
+    // 第二轮：创建所有子级属性
+    const childAttrs = window.inlineSelectedAttrs.filter(a => a.parent_id);
+    // 按层级排序（先创建二级，再创建三级...）
+    const sortedChildren = [];
+    let remaining = [...childAttrs];
+    let maxIterations = 10; // 防止无限循环
+    while (remaining.length > 0 && maxIterations > 0) {
+        const createdInThisRound = [];
+        for (const attr of remaining) {
+            const parentId = attr.parent_id;
+            // 检查父级是否已创建
+            if (attrIdMap[parentId]) {
+                const result = await api('/attributes', { 
+                    method: 'POST', 
+                    body: { name: attr.name, parent_id: attrIdMap[parentId] } 
+                });
+                if (result.success) {
+                    attrIdMap[attr.tempId] = result.data.id;
+                    createdInThisRound.push(attr);
+                } else {
+                    hideLoading();
+                    showToast('创建属性失败: ' + attr.name, 'error');
+                    return;
+                }
+            }
+        }
+        remaining = remaining.filter(a => !createdInThisRound.includes(a));
+        maxIterations--;
+    }
+    
+    // 收集顶级属性ID用于类别模板
+    const templateAttrs = topLevelSelected.map(attr => {
+        const realId = attr.tempId ? attrIdMap[attr.tempId] : attr.id;
+        return { attribute_id: realId, is_required: true };
+    });
+    
+    // 创建类别
+    const result = await api('/categories', { method: 'POST', body: { name, attributes: templateAttrs } });
+    hideLoading();
+    
+    if (result.success) {
+        showToast('类别已添加', 'success');
+        await Promise.all([loadCategories(), loadAttributes()]);
+        initInlineCategoryForm();
+    } else showToast(result.message, 'error');
+});
+
 document.getElementById('accountForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const username = document.getElementById('settingsUsername').value.trim();

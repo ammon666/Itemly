@@ -101,8 +101,53 @@ def delete_attribute(attribute_id):
     if not attribute:
         return jsonify({'success': False, 'message': '属性不存在'}), 404
 
+    # 检查被引用数量
+    ref_count = AttributeModel.get_referenced_count(attribute_id)
+    
+    # 如果有引用，返回引用数量让前端确认
+    if ref_count > 0:
+        return jsonify({
+            'success': False,
+            'message': f'该属性被{ref_count}个物品引用，请确认删除'
+        }), 400
+    
+    # 无引用，直接删除
     AttributeModel.delete(attribute_id)
     return jsonify({
         'success': True,
         'message': '属性删除成功'
+    })
+
+
+@attributes_bp.route('/<int:attribute_id>/force-delete', methods=['DELETE'])
+@login_required
+def force_delete_attribute(attribute_id):
+    """强制删除属性（用于类别编辑时批量删除）"""
+    attribute = AttributeModel.get_by_id(attribute_id)
+    if not attribute:
+        return jsonify({'success': False, 'message': '属性不存在'}), 404
+
+    AttributeModel.delete(attribute_id)
+    return jsonify({
+        'success': True,
+        'message': '属性删除成功'
+    })
+
+
+@attributes_bp.route('/<int:attribute_id>/check-reference', methods=['GET'])
+@login_required
+def check_attribute_reference(attribute_id):
+    """检查属性被物品引用的情况"""
+    attribute = AttributeModel.get_by_id(attribute_id)
+    if not attribute:
+        return jsonify({'success': False, 'message': '属性不存在'}), 404
+
+    ref_count = AttributeModel.get_referenced_count(attribute_id)
+    return jsonify({
+        'success': True,
+        'data': {
+            'attribute_id': attribute_id,
+            'attribute_name': attribute['name'],
+            'referenced_count': ref_count
+        }
     })

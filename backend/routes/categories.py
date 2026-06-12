@@ -42,15 +42,29 @@ def get_category(category_id):
 @categories_bp.route('', methods=['POST'])
 @login_required
 def create_category():
-    """创建类别（自动创建模板）"""
+    """创建类别（自动创建模板和属性配置）"""
     data = request.get_json()
     name = data.get('name', '').strip()
     sort_order = data.get('sort_order', 0)
+    attributes = data.get('attributes', [])
 
     if not name:
         return jsonify({'success': False, 'message': '类别名称不能为空'}), 400
 
+    # 创建类别
     category_id = CategoryModel.create(name=name, sort_order=sort_order)
+    
+    # 获取自动创建的模板ID
+    category = CategoryModel.get_by_id(category_id)
+    if category and category['template_id']:
+        # 添加属性配置
+        for i, attr in enumerate(attributes):
+            TemplateModel.add_attribute(
+                template_id=category['template_id'],
+                attribute_id=attr['attribute_id'],
+                is_required=attr.get('is_required', False),
+                sort_order=i
+            )
 
     return jsonify({
         'success': True,
@@ -81,10 +95,14 @@ def update_category(category_id):
 @categories_bp.route('/<int:category_id>', methods=['DELETE'])
 @login_required
 def delete_category(category_id):
-    """删除类别"""
+    """删除类别（物品自动转移到未分类）"""
     category = CategoryModel.get_by_id(category_id)
     if not category:
         return jsonify({'success': False, 'message': '类别不存在'}), 404
+
+    # 检查是否是未分类
+    if category['name'] == '未分类':
+        return jsonify({'success': False, 'message': '不能删除未分类'}), 400
 
     CategoryModel.delete(category_id)
     return jsonify({
