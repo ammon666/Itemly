@@ -3,7 +3,7 @@ Itemly 类别路由（合并模板管理）
 """
 from flask import Blueprint, request, jsonify, session
 from utils.auth_utils import login_required
-from models import CategoryModel, TemplateModel
+from models import CategoryModel, TemplateModel, AttributeModel
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/api/categories')
 
@@ -42,29 +42,21 @@ def get_category(category_id):
 @categories_bp.route('', methods=['POST'])
 @login_required
 def create_category():
-    """创建类别（自动创建模板和属性配置）"""
+    """创建类别（自动创建模板）"""
     data = request.get_json()
     name = data.get('name', '').strip()
     sort_order = data.get('sort_order', 0)
-    attributes = data.get('attributes', [])
 
     if not name:
         return jsonify({'success': False, 'message': '类别名称不能为空'}), 400
 
-    # 创建类别
+    # 检查类别名称是否重复
+    existing = CategoryModel.find_by_name(name)
+    if existing:
+        return jsonify({'success': False, 'message': '类别名称已存在'}), 400
+
+    # 创建类别（会自动创建模板）
     category_id = CategoryModel.create(name=name, sort_order=sort_order)
-    
-    # 获取自动创建的模板ID
-    category = CategoryModel.get_by_id(category_id)
-    if category and category['template_id']:
-        # 添加属性配置
-        for i, attr in enumerate(attributes):
-            TemplateModel.add_attribute(
-                template_id=category['template_id'],
-                attribute_id=attr['attribute_id'],
-                is_required=attr.get('is_required', False),
-                sort_order=i
-            )
 
     return jsonify({
         'success': True,
@@ -84,7 +76,19 @@ def update_category(category_id):
     if not name:
         return jsonify({'success': False, 'message': '类别名称不能为空'}), 400
 
-    CategoryModel.update(category_id=category_id, name=name, sort_order=sort_order)
+    # 检查类别是否存在
+    existing_category = CategoryModel.get_by_id(category_id)
+    if not existing_category:
+        return jsonify({'success': False, 'message': '类别不存在'}), 404
+
+    # 检查类别名称是否与其他类别重复（排除自己）
+    existing = CategoryModel.find_by_name(name)
+    if existing and int(existing['id']) != int(category_id):
+        return jsonify({'success': False, 'message': '类别名称已存在'}), 400
+
+    updated_rows = CategoryModel.update(category_id=category_id, name=name, sort_order=sort_order)
+    if updated_rows == 0:
+        return jsonify({'success': False, 'message': '类别更新失败，请稍后重试'}), 500
 
     return jsonify({
         'success': True,
@@ -131,30 +135,27 @@ def get_category_template(category_id):
 @categories_bp.route('/<int:category_id>/template', methods=['PUT'])
 @login_required
 def update_category_template(category_id):
-    """更新类别的模板（属性配置）"""
+    """更新类别的模板配置"""
     template = TemplateModel.get_by_category(category_id)
     if not template:
         return jsonify({'success': False, 'message': '模板不存在'}), 404
 
     data = request.get_json()
-    template_name = data.get('template_name', '').strip()
-    attributes = data.get('attributes', [])
+    name = data.get('name', '').strip()  # 类别名称
 
-    # 更新模板名称
-    if template_name:
-        TemplateModel.update_name(template['id'], template_name)
+    # 更新类别名称（如果提供了）
+    if name:
+        # 确认类别存在
+        existing_category = CategoryModel.get_by_id(category_id)
+        if not existing_category:
+            return jsonify({'success': False, 'message': '类别不存在'}), 404
+        existing = CategoryModel.find_by_name(name)
+        if existing and int(existing['id']) != int(category_id):
+            return jsonify({'success': False, 'message': '类别名称已存在'}), 400
 
-    # 清空原有属性配置
-    TemplateModel.clear_attributes(template['id'])
-
-    # 添加新的属性配置
-    for i, attr in enumerate(attributes):
-        TemplateModel.add_attribute(
-            template_id=template['id'],
-            attribute_id=attr['attribute_id'],
-            is_required=attr.get('is_required', False),
-            sort_order=i
-        )
+        updated_rows = CategoryModel.update(category_id=category_id, name=name)
+        if updated_rows == 0:
+            return jsonify({'success': False, 'message': '类别名称更新失败，请稍后重试'}), 500
 
     return jsonify({
         'success': True,

@@ -29,11 +29,20 @@ def get_db_columns(table_name):
         conn.close()
 
 
-def init_db():
-    """初始化数据库（包含迁移逻辑）"""
+def init_db(force_recreate=False):
+    """初始化数据库"""
     conn = get_db()
     try:
         cursor = conn.cursor()
+
+        if force_recreate:
+            # 删除现有表（按外键依赖顺序删除）
+            cursor.execute('DROP TABLE IF EXISTS item_attributes')
+            cursor.execute('DROP TABLE IF EXISTS items')
+            cursor.execute('DROP TABLE IF EXISTS attributes')
+            cursor.execute('DROP TABLE IF EXISTS templates')
+            cursor.execute('DROP TABLE IF EXISTS categories')
+            cursor.execute('DROP TABLE IF EXISTS users')
 
         # 创建用户表
         cursor.execute('''
@@ -67,59 +76,35 @@ def init_db():
             )
         ''')
 
-        # 创建属性表（多级树形结构，替代原来的tags）
+        # 创建属性表（多级树形结构；template_id 用于按模板隔离属性树）
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS attributes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 parent_id INTEGER DEFAULT NULL,
+                template_id INTEGER NOT NULL,
                 sort_order INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (parent_id) REFERENCES attributes(id) ON DELETE CASCADE
+                FOREIGN KEY (parent_id) REFERENCES attributes(id) ON DELETE CASCADE,
+                FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
             )
         ''')
 
-        # 创建模板属性关联表（模板包含哪些属性字段，以及是否必填）
+
+
+        # 创建物品表（必须选择模板）
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS template_attributes (
+            CREATE TABLE IF NOT EXISTS items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
                 template_id INTEGER NOT NULL,
-                attribute_id INTEGER NOT NULL,
-                is_required INTEGER DEFAULT 0,
-                sort_order INTEGER DEFAULT 0,
-                FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE,
-                FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE
+                remark TEXT,
+                images TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
             )
         ''')
-
-        # 创建物品表（必须选择模板）- 使用迁移逻辑处理旧数据库
-        items_columns = get_db_columns('items')
-        if not items_columns:
-            # 表不存在，创建新表
-            cursor.execute('''
-                CREATE TABLE items (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    template_id INTEGER NOT NULL,
-                    remark TEXT,
-                    images TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
-                )
-            ''')
-        else:
-            # 表已存在，检查并补充缺失的列
-            if 'template_id' not in items_columns:
-                cursor.execute('ALTER TABLE items ADD COLUMN template_id INTEGER NOT NULL DEFAULT 1')
-            if 'remark' not in items_columns:
-                cursor.execute('ALTER TABLE items ADD COLUMN remark TEXT')
-            if 'images' not in items_columns:
-                cursor.execute('ALTER TABLE items ADD COLUMN images TEXT')
-            if 'created_at' not in items_columns:
-                cursor.execute('ALTER TABLE items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
-            if 'updated_at' not in items_columns:
-                cursor.execute('ALTER TABLE items ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
 
         # 创建物品属性值表
         cursor.execute('''
@@ -219,7 +204,7 @@ class CategoryModel:
 
     @staticmethod
     def get_all():
-        """获取所有类别"""
+        """获取所有类别（包含属性信息）"""
         conn = get_db()
         try:
             cursor = conn.cursor()
@@ -230,7 +215,63 @@ class CategoryModel:
                 ORDER BY c.sort_order, c.name
             ''')
             categories = cursor.fetchall()
-            return [dict_from_row(c) for c in categories]
+            result = []
+            
+            # 预先获取所有属性，按模板分组
+            cursor.execute('SELECT * FROM attributes ORDER BY sort_order, name')
+            all_attrs = cursor.fetchall()
+            attrs_by_template = {}
+            for attr in all_attrs:
+                attr_dict = dict_from_row(attr)
+                template_id = attr_dict['template_id']
+                if template_id not in attrs_by_template:
+                    attrs_by_template[template_id] = []
+                attrs_by_template[template_id].append(attr_dict)
+            
+            # 构建树形结构的辅助函数
+            def build_attr_tree(attrs):
+                tree = []
+                for attr in attrs:
+                    if attr['parent_id'] is None:
+                        tree.append({
+                            'id': attr['id'],
+                            'name': attr['name'],
+                            'parent_id': None,
+                            'template_id': attr['template_id'],
+                            'sort_order': attr['sort_order'],
+                            'is_required': False,
+                            'children': []
+                        })
+                
+                def add_children(parent):
+                    for attr in attrs:
+                        if attr['parent_id'] == parent['id']:
+                            child = {
+                                'id': attr['id'],
+                                'name': attr['name'],
+                                'parent_id': attr['parent_id'],
+                                'template_id': attr['template_id'],
+                                'sort_order': attr['sort_order'],
+                                'is_required': False,
+                                'children': []
+                            }
+                            add_children(child)
+                            parent['children'].append(child)
+                
+                for root in tree:
+                    add_children(root)
+                return tree
+            
+            for cat in categories:
+                cat_dict = dict_from_row(cat)
+                # 获取模板的属性
+                template_id = cat_dict.get('template_id')
+                if template_id and template_id in attrs_by_template:
+                    cat_dict['attributes'] = build_attr_tree(attrs_by_template[template_id])
+                else:
+                    cat_dict['attributes'] = []
+                result.append(cat_dict)
+            return result
         finally:
             conn.close()
 
@@ -248,6 +289,18 @@ class CategoryModel:
             ''', (category_id,))
             category = cursor.fetchone()
             return dict_from_row(category)
+        finally:
+            conn.close()
+
+    @staticmethod
+    def find_by_name(name):
+        """根据名称查找类别"""
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM categories WHERE name = ?', (name,))
+            category = cursor.fetchone()
+            return dict_from_row(category) if category else None
         finally:
             conn.close()
 
@@ -275,10 +328,14 @@ class CategoryModel:
 
     @staticmethod
     def update(category_id, name, sort_order=None):
-        """更新类别"""
+        """更新类别。返回实际更新的行数，若类别不存在返回 0。"""
         conn = get_db()
         try:
             cursor = conn.cursor()
+            # 先确认类别存在
+            cursor.execute('SELECT id FROM categories WHERE id = ?', (category_id,))
+            if not cursor.fetchone():
+                return 0
             if sort_order is not None:
                 cursor.execute(
                     'UPDATE categories SET name = ?, sort_order = ? WHERE id = ?',
@@ -290,9 +347,9 @@ class CategoryModel:
                     (name, category_id)
                 )
             conn.commit()
+            return cursor.rowcount
         finally:
             conn.close()
-        return True
 
     @staticmethod
     def get_or_create_uncategorized():
@@ -300,8 +357,13 @@ class CategoryModel:
         conn = get_db()
         try:
             cursor = conn.cursor()
-            # 查找未分类
-            cursor.execute("SELECT id, template_id FROM categories WHERE name = '未分类'")
+            # 查找未分类（通过JOIN获取template_id）
+            cursor.execute('''
+                SELECT c.id, t.id as template_id
+                FROM categories c
+                LEFT JOIN templates t ON c.id = t.category_id
+                WHERE c.name = '未分类'
+            ''')
             row = cursor.fetchone()
             if row:
                 return {'id': row['id'], 'template_id': row['template_id']}
@@ -319,7 +381,7 @@ class CategoryModel:
 
     @staticmethod
     def delete(category_id):
-        """删除类别（物品转移到未分类）"""
+        """删除类别（物品转移到未分类，利用级联删除属性）"""
         # 首先获取或创建未分类
         uncategorized = CategoryModel.get_or_create_uncategorized()
         
@@ -331,9 +393,7 @@ class CategoryModel:
             cursor.execute('UPDATE items SET template_id = ? WHERE template_id IN (SELECT id FROM templates WHERE category_id = ?)', 
                           (uncategorized['template_id'], category_id))
             
-            # 删除模板关联
-            cursor.execute('DELETE FROM template_attributes WHERE template_id IN (SELECT id FROM templates WHERE category_id = ?)', (category_id,))
-            # 删除模板
+            # 删除模板（会级联删除属性）
             cursor.execute('DELETE FROM templates WHERE category_id = ?', (category_id,))
             # 删除类别
             cursor.execute('DELETE FROM categories WHERE id = ?', (category_id,))
@@ -399,22 +459,57 @@ class TemplateModel:
 
     @staticmethod
     def get_with_attributes(template_id):
-        """获取模板及其属性字段"""
+        """获取模板及其属性字段（包含完整的属性树）"""
         template = TemplateModel.get_by_id(template_id)
         if not template:
             return None
+        
+        # 直接从 attributes 表获取该模板的所有属性
         conn = get_db()
         try:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT ta.*, a.name as attribute_name, a.parent_id
-                FROM template_attributes ta
-                INNER JOIN attributes a ON ta.attribute_id = a.id
-                WHERE ta.template_id = ?
-                ORDER BY ta.sort_order
+                SELECT a.*
+                FROM attributes a
+                WHERE a.template_id = ?
+                ORDER BY a.sort_order, a.name
             ''', (template_id,))
-            attributes = cursor.fetchall()
-            template['attributes'] = [dict_from_row(a) for a in attributes]
+            all_attrs = cursor.fetchall()
+            attr_list = [dict_from_row(a) for a in all_attrs]
+            
+            # 构建树形结构
+            tree = []
+            for attr in attr_list:
+                if attr['parent_id'] is None:
+                    tree.append({
+                        'id': attr['id'],
+                        'name': attr['name'],
+                        'parent_id': None,
+                        'template_id': attr['template_id'],
+                        'sort_order': attr['sort_order'],
+                        'is_required': False,
+                        'children': []
+                    })
+            
+            def add_children(parent):
+                for attr in attr_list:
+                    if attr['parent_id'] == parent['id']:
+                        child = {
+                            'id': attr['id'],
+                            'name': attr['name'],
+                            'parent_id': attr['parent_id'],
+                            'template_id': attr['template_id'],
+                            'sort_order': attr['sort_order'],
+                            'is_required': False,
+                            'children': []
+                        }
+                        add_children(child)
+                        parent['children'].append(child)
+            
+            for root in tree:
+                add_children(root)
+            
+            template['attributes'] = tree
         finally:
             conn.close()
         return template
@@ -431,91 +526,32 @@ class TemplateModel:
             conn.close()
         return True
 
-    @staticmethod
-    def add_attribute(template_id, attribute_id, is_required=False, sort_order=0):
-        """添加模板属性字段"""
-        conn = get_db()
-        try:
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO template_attributes (template_id, attribute_id, is_required, sort_order)
-                VALUES (?, ?, ?, ?)
-            ''', (template_id, attribute_id, 1 if is_required else 0, sort_order))
-            conn.commit()
-            return cursor.lastrowid
-        finally:
-            conn.close()
-
-    @staticmethod
-    def update_attribute(template_attribute_id, is_required=None, sort_order=None):
-        """更新模板属性字段配置"""
-        conn = get_db()
-        try:
-            cursor = conn.cursor()
-            if is_required is not None and sort_order is not None:
-                cursor.execute(
-                    'UPDATE template_attributes SET is_required = ?, sort_order = ? WHERE id = ?',
-                    (1 if is_required else 0, sort_order, template_attribute_id)
-                )
-            elif is_required is not None:
-                cursor.execute(
-                    'UPDATE template_attributes SET is_required = ? WHERE id = ?',
-                    (1 if is_required else 0, template_attribute_id)
-                )
-            elif sort_order is not None:
-                cursor.execute(
-                    'UPDATE template_attributes SET sort_order = ? WHERE id = ?',
-                    (sort_order, template_attribute_id)
-                )
-            conn.commit()
-        finally:
-            conn.close()
-        return True
-
-    @staticmethod
-    def remove_attribute(template_attribute_id):
-        """移除模板属性字段"""
-        conn = get_db()
-        try:
-            cursor = conn.cursor()
-            cursor.execute('DELETE FROM template_attributes WHERE id = ?', (template_attribute_id,))
-            conn.commit()
-        finally:
-            conn.close()
-        return True
-
-    @staticmethod
-    def clear_attributes(template_id):
-        """清空模板的所有属性字段"""
-        conn = get_db()
-        try:
-            cursor = conn.cursor()
-            cursor.execute('DELETE FROM template_attributes WHERE template_id = ?', (template_id,))
-            conn.commit()
-        finally:
-            conn.close()
-        return True
-
 
 class AttributeModel:
     """属性模型（多级树形结构）"""
 
     @staticmethod
-    def get_all():
-        """获取所有属性"""
+    def get_all(template_id=None):
+        """获取所有属性（可选：按模板过滤）"""
         conn = get_db()
         try:
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM attributes ORDER BY sort_order, name')
+            if template_id is not None:
+                cursor.execute(
+                    'SELECT * FROM attributes WHERE template_id = ? ORDER BY sort_order, name',
+                    (template_id,)
+                )
+            else:
+                cursor.execute('SELECT * FROM attributes ORDER BY sort_order, name')
             attributes = cursor.fetchall()
             return [dict_from_row(a) for a in attributes]
         finally:
             conn.close()
 
     @staticmethod
-    def get_tree():
-        """获取属性树形结构"""
-        attributes = AttributeModel.get_all()
+    def get_tree(template_id=None):
+        """获取属性树形结构（可选：按模板过滤）"""
+        attributes = AttributeModel.get_all(template_id=template_id)
         tree = []
         for attr in attributes:
             if attr['parent_id'] is None:
@@ -545,7 +581,7 @@ class AttributeModel:
         return tree
 
     @staticmethod
-    def get_flat_tree():
+    def get_flat_tree(template_id=None):
         """获取扁平化的属性树（带层级信息）"""
         def flatten(tree, level=0, prefix=''):
             result = []
@@ -561,7 +597,7 @@ class AttributeModel:
                 if node['children']:
                     result.extend(flatten(node['children'], level + 1, prefix + indent))
             return result
-        return flatten(AttributeModel.get_tree())
+        return flatten(AttributeModel.get_tree(template_id=template_id))
 
     @staticmethod
     def get_by_id(attribute_id):
@@ -576,14 +612,49 @@ class AttributeModel:
             conn.close()
 
     @staticmethod
-    def create(name, parent_id=None, sort_order=0):
-        """创建属性"""
+    def find_by_name_and_parent(name, parent_id=None, template_id=None):
+        """根据名称和父ID查找同级属性（按模板隔离）"""
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            if template_id is not None:
+                # 限定在同一模板内做重名校验
+                if parent_id is None:
+                    cursor.execute(
+                        'SELECT * FROM attributes WHERE name = ? AND parent_id IS NULL AND template_id = ?',
+                        (name, template_id)
+                    )
+                else:
+                    cursor.execute(
+                        'SELECT * FROM attributes WHERE name = ? AND parent_id = ? AND template_id = ?',
+                        (name, parent_id, template_id)
+                    )
+            else:
+                # 没有 template_id 时，查找所有属性
+                if parent_id is None:
+                    cursor.execute(
+                        'SELECT * FROM attributes WHERE name = ? AND parent_id IS NULL',
+                        (name,)
+                    )
+                else:
+                    cursor.execute(
+                        'SELECT * FROM attributes WHERE name = ? AND parent_id = ?',
+                        (name, parent_id)
+                    )
+            attr = cursor.fetchone()
+            return dict_from_row(attr) if attr else None
+        finally:
+            conn.close()
+
+    @staticmethod
+    def create(name, parent_id=None, template_id=None, sort_order=0):
+        """创建属性（按 template_id 隔离属性树）"""
         conn = get_db()
         try:
             cursor = conn.cursor()
             cursor.execute(
-                'INSERT INTO attributes (name, parent_id, sort_order) VALUES (?, ?, ?)',
-                (name, parent_id, sort_order)
+                'INSERT INTO attributes (name, parent_id, template_id, sort_order) VALUES (?, ?, ?, ?)',
+                (name, parent_id, template_id, sort_order)
             )
             attribute_id = cursor.lastrowid
             conn.commit()
@@ -614,16 +685,32 @@ class AttributeModel:
 
     @staticmethod
     def delete(attribute_id):
-        """删除属性"""
+        """删除属性（级联删除所有子属性）"""
         conn = get_db()
         try:
             cursor = conn.cursor()
-            # 删除模板中的关联
-            cursor.execute('DELETE FROM template_attributes WHERE attribute_id = ?', (attribute_id,))
+            
+            # 递归查找所有子属性ID
+            def find_all_children(parent_id):
+                cursor.execute('SELECT id FROM attributes WHERE parent_id = ?', (parent_id,))
+                children = cursor.fetchall()
+                child_ids = [row['id'] for row in children]
+                all_ids = list(child_ids)
+                for child_id in child_ids:
+                    all_ids.extend(find_all_children(child_id))
+                return all_ids
+            
+            # 获取所有要删除的属性ID（包括自身和所有子属性）
+            ids_to_delete = [attribute_id] + find_all_children(attribute_id)
+            
             # 删除物品中的关联
-            cursor.execute('DELETE FROM item_attributes WHERE attribute_id = ?', (attribute_id,))
-            # 删除属性
-            cursor.execute('DELETE FROM attributes WHERE id = ?', (attribute_id,))
+            for attr_id in ids_to_delete:
+                cursor.execute('DELETE FROM item_attributes WHERE attribute_id = ?', (attr_id,))
+            
+            # 删除属性（包括所有子属性）
+            for attr_id in ids_to_delete:
+                cursor.execute('DELETE FROM attributes WHERE id = ?', (attr_id,))
+            
             conn.commit()
         finally:
             conn.close()
@@ -811,7 +898,7 @@ class ItemModel:
         try:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT ia.*, a.name as attribute_name, a.parent_id
+                SELECT ia.attribute_id as id, a.name, a.parent_id
                 FROM item_attributes ia
                 INNER JOIN attributes a ON ia.attribute_id = a.id
                 WHERE ia.item_id = ?
