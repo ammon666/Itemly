@@ -3,7 +3,9 @@ Itemly Flask应用入口
 轻量化物品管理系统
 """
 import os
-from flask import Flask, send_from_directory, jsonify, request, session
+import logging
+from datetime import timedelta
+from flask import Flask, send_from_directory, jsonify, request, session, g
 from flask_cors import CORS
 from models import init_db
 from routes import auth_bp, items_bp, categories_bp, attributes_bp, stats_bp
@@ -16,24 +18,72 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)
 # 上传文件夹路径
 UPLOAD_FOLDER = os.path.join(PROJECT_DIR, 'uploads')
 
+# 全局日志与审计日志
+_logging_configured = False
+
+
+def _setup_logging():
+    """配置应用日志。避免被多次调用时重复添加 handler。"""
+    global _logging_configured
+    if _logging_configured:
+        return
+    logging.basicConfig(
+        level=logging.INFO,
+        format='[%(asctime)s] %(levelname)s %(name)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+    audit = logging.getLogger('itemly.audit')
+    audit.setLevel(logging.INFO)
+    _logging_configured = True
+
 
 def create_app():
     """创建Flask应用"""
+    _setup_logging()
+
     # 前端文件所在目录
     frontend_dir = os.path.join(PROJECT_DIR, 'frontend')
     html_dir = os.path.join(frontend_dir, 'html')
 
     app = Flask(__name__, static_folder=frontend_dir, static_url_path='')
 
+    # 每个请求内共享一个 sqlite 连接；请求结束后自动关闭
+    @app.before_request
+    def _open_db():
+        from models import DATABASE_PATH
+        import sqlite3
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute('PRAGMA foreign_keys = ON')
+        g.db = conn
+
+    @app.teardown_request
+    def _close_db(exc=None):
+        conn = getattr(g, 'db', None)
+        if conn is not None:
+            try:
+                if exc is not None:
+                    conn.rollback()
+                else:
+                    # 由具体业务代码提交，这里仅关闭
+                    pass
+            finally:
+                conn.close()
+                g.db = None
+
     # 配置
-    app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET', 'itemly-secret-key-change-in-production')
+    _secret = os.environ.get('FLASK_SECRET') or 'itemly-secret-key-change-in-production'
+    app.config['SECRET_KEY'] = _secret
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
-    
-    # Session 配置 - 允许在非 HTTPS 环境下使用（开发环境）
-    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)
+
+    # Session 配置
+    _is_prod = os.environ.get('FLASK_ENV', 'production') == 'production'
+    app.config['SESSION_COOKIE_SECURE'] = _is_prod
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
+    app.config['SESSION_COOKIE_NAME'] = 'itemly_session'
 
     # 确保上传目录存在
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)

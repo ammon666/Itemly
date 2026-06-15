@@ -1,9 +1,13 @@
 """
 Itemly 类别路由（合并模板管理）
 """
+import logging
+
 from flask import Blueprint, request, jsonify, session
 from utils.auth_utils import login_required
 from models import CategoryModel, TemplateModel, AttributeModel
+
+audit = logging.getLogger('itemly.audit')
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/api/categories')
 
@@ -109,6 +113,7 @@ def delete_category(category_id):
         return jsonify({'success': False, 'message': '不能删除未分类'}), 400
 
     CategoryModel.delete(category_id)
+    audit.info('CATEGORY_DELETED id=%s user=%s', category_id, session.get('username'))
     return jsonify({
         'success': True,
         'message': '类别删除成功'

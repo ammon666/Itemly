@@ -1,9 +1,13 @@
 """
 Itemly 属性管理路由（替换原来的标签管理）
 """
+import logging
+
 from flask import Blueprint, request, jsonify, session
 from utils.auth_utils import login_required
 from models import AttributeModel
+
+audit = logging.getLogger('itemly.audit')
 
 attributes_bp = Blueprint('attributes', __name__, url_prefix='/api/attributes')
 
@@ -165,6 +169,7 @@ def delete_attribute(attribute_id):
 
     # 无引用，直接删除
     AttributeModel.delete(attribute_id)
+    audit.info('ATTRIBUTE_DELETED id=%s user=%s', attribute_id, session.get('username'))
     return jsonify({
         'success': True,
         'message': '属性删除成功'
@@ -180,6 +185,7 @@ def force_delete_attribute(attribute_id):
         return jsonify({'success': False, 'message': '属性不存在'}), 404
 
     AttributeModel.delete(attribute_id)
+    audit.info('ATTRIBUTE_FORCE_DELETED id=%s user=%s', attribute_id, session.get('username'))
     return jsonify({
         'success': True,
         'message': '属性删除成功'

@@ -1,9 +1,13 @@
 """
 Itemly 物品路由
 """
+import logging
+
 from flask import Blueprint, request, jsonify, session
 from utils.auth_utils import login_required
 from models import ItemModel, TemplateModel, AttributeModel
+
+audit = logging.getLogger('itemly.audit')
 
 items_bp = Blueprint('items', __name__, url_prefix='/api/items')
 
@@ -197,6 +201,7 @@ def delete_item(item_id):
         return jsonify({'success': False, 'message': '物品不存在'}), 404
 
     ItemModel.delete(item_id)
+    audit.info('ITEM_DELETED id=%s user=%s', item_id, session.get('username'))
     return jsonify({
         'success': True,
         'message': '物品删除成功'
@@ -214,6 +219,7 @@ def batch_delete_items():
         return jsonify({'success': False, 'message': '请选择要删除的物品'}), 400
 
     ItemModel.batch_delete(item_ids)
+    audit.info('ITEM_BATCH_DELETED count=%s user=%s', len(item_ids), session.get('username'))
     return jsonify({
         'success': True,
         'message': f'成功删除 {len(item_ids)} 个物品'
@@ -234,7 +240,9 @@ def batch_update_attributes():
 
     if action == 'remove':
         ItemModel.batch_remove_attributes(item_ids, attribute_ids)
+        audit.info('ITEM_BATCH_REMOVE_ATTRIBUTES item_count=%s attr_count=%s user=%s', len(item_ids), len(attribute_ids), session.get('username'))
         return jsonify({'success': True, 'message': f'已为 {len(item_ids)} 个物品移除属性'})
     else:
         ItemModel.batch_add_attributes(item_ids, attribute_ids)
+        audit.info('ITEM_BATCH_ADD_ATTRIBUTES item_count=%s attr_count=%s user=%s', len(item_ids), len(attribute_ids), session.get('username'))
         return jsonify({'success': True, 'message': f'已为 {len(item_ids)} 个物品添加属性'})
