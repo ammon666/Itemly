@@ -3,19 +3,24 @@
 # 数据目录：/data（挂载到命名卷 itemly_data，容器重建数据不丢失）
 #
 # 使用说明：
-#   1. 通过环境变量 IMAGE_TAG 指定要拉取的镜像标签，例如：
+#   1. 通过环境变量 IMAGE_TAG 指定要拉取的镜像标签（必须设置），例如：
 #        IMAGE_TAG=sha-e57f3bc    docker compose up -d
 #        IMAGE_TAG=v1.0.0         docker compose up -d
 #        IMAGE_TAG=latest         docker compose up -d
-#      若未设置，默认使用 sha-e57f3bc（当前仓库中存在的 tag）
-#   2. FLASK_SECRET 为敏感信息，请改为自己的强随机密钥
+#      若未设置 IMAGE_TAG，docker compose 会在启动时直接报错。
+#   2. 可选：通过 DOCKER_PLATFORM 强制指定架构（例如老镜像缺少 arm64 时设为 linux/amd64）
+#        DOCKER_PLATFORM=linux/amd64 IMAGE_TAG=sha-e57f3bc  docker compose up -d
+#      留空时由 Docker 自动匹配当前主机架构。
+#   3. FLASK_SECRET 为敏感信息，请改为自己的强随机密钥
 
 version: '3.8'
 
 services:
   itemly:
-    # 从 GitHub Container Registry 拉取镜像；标签通过 ${IMAGE_TAG:-sha-e57f3bc} 动态指定
-    image: ghcr.io/ammon666/itemly:${IMAGE_TAG:-sha-e57f3bc}
+    # 镜像标签必须通过环境变量 IMAGE_TAG 指定
+    image: ghcr.io/ammon666/itemly:${IMAGE_TAG:?请设置 IMAGE_TAG 环境变量，如 IMAGE_TAG=latest}
+    # 通过 DOCKER_PLATFORM 指定架构；留空由 Docker 自动匹配当前主机架构
+    platform: ${DOCKER_PLATFORM:-}
     container_name: itemly
     restart: unless-stopped
     ports:
