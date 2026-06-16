@@ -307,13 +307,28 @@ img { display: block; width: 100%; }
 .stat-lbl { font-size: 11.5px; color: var(--muted); margin-top: 2px; font-family: 'Inter', sans-serif; }
 
 /* TOOLBAR */
-.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .toolbar-title { font-size: 14px; font-weight: 600; color: var(--ink); flex-shrink: 0; }
 .toolbar-selection { font-size: 12.5px; color: var(--sub); margin-left: 8px; flex-shrink: 0; min-width: 90px; }
 .toolbar-selection b { color: var(--accent); margin: 0 2px; }
 .toolbar-spacer { flex: 1; }
-.toolbar-group { display: flex; align-items: center; gap: 6px; }
+.toolbar-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .toolbar-sep { display: inline-block; width: 1px; height: 20px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+.toolbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .toolbar-right {
+    gap: 4px;
+  }
+  .toolbar-right .btn-primary span,
+  .toolbar-right .sort-btn span {
+    display: none;
+  }
+  .toolbar-right .btn-primary,
+  .toolbar-right .sort-btn {
+    padding: 0 8px;
+  }
+}
 
 /* 原批量操作条样式保留，但主页面已将按钮嵌入工具栏，此处仅作兼容（其他页面若用到） */
 .batch-bar {
@@ -529,9 +544,20 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
 /* TREE SELECTOR */
 .tree-selector {
-  max-height: 280px; overflow-y: auto;
+  width: 100%; 
+  max-height: calc(100vh - 200px); 
+  height: calc(100vh - 200px); 
+  overflow-y: auto;
   border: 1px solid var(--border); border-radius: 7px; padding: 8px;
   background: var(--surface);
+}
+
+/* 筛选侧边栏body样式 */
+.filter-body {
+  padding: 8px;
+  margin: 0;
+  height: calc(100% - 56px);
+  overflow-y: auto;
 }
 
 /* ADMIN CARD */
@@ -795,37 +821,39 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
           已选择 <b id="batchCountText">0</b> 个物品
         </span>
         <div class="toolbar-spacer"></div>
-        <div class="chips" id="homeFilterChips"></div>
-        <span class="toolbar-sep"></span>
-        <div class="toolbar-group" id="actionGroup">
-          <button class="btn-primary" id="batchEditBtn" onclick="showBatchEditModal()" style="height:30px;font-size:12px;display:none;">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            <span>同类属性编辑</span>
-          </button>
-          <button class="btn-primary" id="batchDeleteBtn" onclick="batchDeleteItems()" style="height:30px;font-size:12px;background:#EF4444;display:none;">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            <span>批量删除</span>
-          </button>
-          <button class="btn-primary" id="editModeBtn" onclick="toggleEditMode()" style="height:30px;font-size:12px;">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            <span id="editModeBtnText">进入编辑</span>
-          </button>
+        <div class="toolbar-right">
+          <div class="chips" id="homeFilterChips"></div>
           <span class="toolbar-sep"></span>
-          <button class="sort-btn" id="viewToggleBtn" onclick="toggleViewMode()">
-            <svg id="viewToggleIcon" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            <span id="viewToggleText">卡片</span>
-          </button>
-        </div>
-        <span class="toolbar-sep"></span>
-        <div class="toolbar-group" id="filterGroup">
-          <button class="sort-btn" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M3 4a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V4z"/><path d="M7 2v20M17 2v20"/></svg>
-            筛选
-          </button>
-          <button class="sort-btn" onclick="clearAllFilters()">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            重置
-          </button>
+          <div class="toolbar-group" id="actionGroup">
+            <button class="btn-primary" id="batchEditBtn" onclick="showBatchEditModal()" style="height:30px;font-size:12px;display:none;">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>同类属性编辑</span>
+            </button>
+            <button class="btn-primary" id="batchDeleteBtn" onclick="batchDeleteItems()" style="height:30px;font-size:12px;background:#EF4444;display:none;">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              <span>批量删除</span>
+            </button>
+            <button class="btn-primary" id="editModeBtn" onclick="toggleEditMode()" style="height:30px;font-size:12px;">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span id="editModeBtnText">进入编辑</span>
+            </button>
+            <span class="toolbar-sep"></span>
+            <button class="sort-btn" id="viewToggleBtn" onclick="toggleViewMode()">
+              <svg id="viewToggleIcon" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              <span id="viewToggleText">卡片</span>
+            </button>
+          </div>
+          <span class="toolbar-sep"></span>
+          <div class="toolbar-group" id="filterGroup">
+            <button class="sort-btn" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M3 4a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V4z"/><path d="M7 2v20M17 2v20"/></svg>
+              筛选
+            </button>
+            <button class="sort-btn" onclick="clearAllFilters()">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              重置
+            </button>
+          </div>
         </div>
       </div>
 
@@ -947,12 +975,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
     <h5 class="offcanvas-title">筛选条件</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
-  <div class="offcanvas-body">
-    <div class="mb-3">
-      <label class="form-label">筛选条件</label>
-      <div id="filterContainer" class="tree-selector"></div>
-    </div>
-  </div>
+  <div id="filterContainer" class="offcanvas-body filter-body"></div>
 </div>
 
 <!-- 添加/编辑物品模态框 -->
@@ -994,10 +1017,6 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
           </div>
         </div>
         <div class="modal-footer" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-            <button type="button" id="itemDeleteBtn" class="btn btn-outline-danger" onclick="confirmDeleteItem(currentItemId)" style="display:none;margin-right:16px;">
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-              删除
-            </button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="margin-right:16px;">取消</button>
             <button id="saveAndContinueBtn" type="button" class="btn btn-secondary" onclick="saveItemAndContinue()" style="background:#F59E0B;color:#fff;border-color:#F59E0B;">保存并继续</button>
             <button type="submit" class="btn-primary">保存</button>
@@ -1296,7 +1315,6 @@ function renderAttrTree({ attrs, containerId, collapsedKey = '', onAddChild, onE
                     ` : '<span style="width:12px;"></span>'}
                     <span style="flex:1;font-size:13px;">
                         ${level === 0 ? '<strong>' + attr.name + '</strong>' : attr.name}
-                        ${level === 0 ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">属性</span>' : ''}
                     </span>
                     ${showActions ? `
                     <div style="display:flex;gap:4px;" onclick="event.stopPropagation();">
@@ -1815,10 +1833,13 @@ function renderFilterContainer() {
             <div class="filter-category-group">
                 <div style="display:flex;align-items:center;padding:6px 8px;background:${isCatSelected ? 'var(--accent)' : 'var(--white)'};border-radius:6px;border:1px solid ${isCatSelected ? 'var(--accent)' : 'var(--border)'};cursor:pointer;" onclick="toggleHomeCategoryFilter(${cat.id})">
                     ${hasAttrs ? `
-                        <span class="collapse-arrow" style="color:${isCatSelected ? '#fff' : 'var(--sub)'};display:inline-flex;align-items:center;margin-right:8px;" onclick="event.stopPropagation();toggleCatCollapse('cat_${cat.id}')">
-                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:${isCatSelected ? 'rgba(255,255,255,0.2)' : 'var(--accent-bg)'};margin-right:6px;">
+                            <span class="collapse-arrow" style="color:${isCatSelected ? '#fff' : 'var(--accent)'};display:inline-flex;align-items:center;" onclick="event.stopPropagation();toggleCatCollapse('cat_${cat.id}')">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </span>
                         </span>
-                    ` : '<span style="width:18px;"></span>'}
+                    ` : '<span style="width:30px;"></span>'}
+                    <span style="width:1px;height:16px;background:${isCatSelected ? 'rgba(255,255,255,0.3)' : 'var(--border)'};margin-right:8px;"></span>
                     <span style="flex:1;font-size:13px;font-weight:600;color:${isCatSelected ? '#fff' : 'var(--ink)'};">${cat.name}</span>
                     ${isCatSelected ? `
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1849,13 +1870,12 @@ function renderFilterAttrTree(attrTree) {
                 <div style="margin-bottom:2px;">
                     <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;margin-left:${indent}px;background:${isSelected && canSelect ? 'var(--accent)' : 'var(--white)'};border-radius:4px;border:1px solid ${isSelected && canSelect ? 'var(--accent)' : 'var(--border)'};cursor:pointer;color:${isSelected && canSelect ? '#fff' : 'inherit'}" onclick="${hasChildren ? '' : ''}${canSelect ? `toggleHomeAttributeFilter(${n.id})` : ''}">
                         ${hasChildren ? `
-                            <span class="collapse-arrow" style="color:${isSelected && canSelect ? '#fff' : 'var(--sub)'};display:inline-flex;align-items:center;" onclick="toggleFilterAttrCollapse('attr_${n.id}')">
+                            <span class="collapse-arrow" style="color:${isSelected && canSelect ? '#fff' : 'var(--sub)'};display:inline-flex;align-items:center;" onclick="event.stopPropagation();toggleFilterAttrCollapse('attr_${n.id}')">
                                 <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                             </span>
                         ` : '<span style="width:12px;"></span>'}
                         <span style="flex:1;font-size:13px;${isTopLevel ? 'font-weight:600;' : ''}">
                             ${n.name}
-                            ${isTopLevel ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">字段</span>' : ''}
                         </span>
                         ${isSelected && canSelect ? `
                             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1990,7 +2010,6 @@ function renderBatchAttrTree(attrList, level = 0, parentId = 'root') {
                     ` : '<span style="width:12px;"></span>'}
                     <span style="flex:1;font-size:13px;">
                         ${isTopLevel ? '<strong>' + attr.name + '</strong>' : attr.name}
-                        ${isTopLevel ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">属性</span>' : ''}
                     </span>
                     ${isSelected && !isTopLevel ? `
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2703,7 +2722,6 @@ function renderInlineAttrTree() {
                         ` : '<span style="width:12px;"></span>'}
                         <span style="flex:1;font-size:13px;">
                             ${isTopLevel ? '<strong>' + attr.name + '</strong>' : attr.name}
-                            ${isTopLevel ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">属性</span>' : ''}
                         </span>
                         <div style="display:flex;gap:4px;" onclick="event.stopPropagation();">
                             <button type="button" onclick="startAddInlineAttr('${id}')" title="添加子属性" style="background:none;border:none;color:var(--success);cursor:pointer;font-size:14px;padding:2px 6px;">
@@ -2843,7 +2861,6 @@ function openItemModal(templateId = null) {
     }
     
     // 隐藏删除按钮，显示保存并继续按钮
-    document.getElementById('itemDeleteBtn').style.display = 'none';
     document.getElementById('saveAndContinueBtn').style.display = 'inline-flex';
     new bootstrap.Modal(document.getElementById('itemModal')).show();
 }
@@ -2944,13 +2961,12 @@ async function loadTemplateAttributes() {
                     <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-left:${indent}px;background:${isSelected && !isTopLevel ? 'var(--accent)' : 'var(--white)'};border-radius:4px;border:1px solid ${isSelected && !isTopLevel ? 'var(--accent)' : 'var(--border)'};cursor:pointer;color:${isSelected && !isTopLevel ? '#fff' : 'inherit'}" 
                          onclick="${canCollapse ? `toggleItemAttrCollapse('${attrKey}');` : ''}${!isTopLevel ? `handleItemAttrSelectDirect('${attrKey}', '${parentId}', '${attrId}')` : ''}">
                         ${canCollapse ? `
-                            <span class="collapse-arrow ${isCollapsed ? 'collapsed' : ''}" style="color:${isSelected && !isTopLevel ? '#fff' : 'var(--sub)'};display:inline-flex;align-items:center;">
+                            <span class="collapse-arrow ${isCollapsed ? 'collapsed' : ''}" style="color:${isSelected && !isTopLevel ? '#fff' : 'var(--sub)'};display:inline-flex;align-items:center;" onclick="event.stopPropagation();toggleItemAttrCollapse('${attrKey}')">
                                 <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                             </span>
                         ` : '<span style="width:12px;"></span>'}
                         <span style="flex:1;font-size:13px;">
                             ${isTopLevel ? '<strong>' + attrName + '</strong>' : attrName}
-                            ${isTopLevel ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">属性</span>' : ''}
                         </span>
                         ${isSelected && !isTopLevel ? `
                             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2966,6 +2982,9 @@ async function loadTemplateAttributes() {
     
     // 直接渲染整个属性树
     container.innerHTML = renderAttrTree(attrs);
+    
+    // 更新已选中项的样式
+    updateSelectedAttrStyles();
 }
 
 // 切换添加物品属性折叠状态
@@ -2978,6 +2997,46 @@ function toggleItemAttrCollapse(id) {
     }
     // 重新渲染属性树
     loadTemplateAttributes();
+}
+
+// 更新已选中属性的样式
+function updateSelectedAttrStyles() {
+    const container = document.getElementById('attributeSelector');
+    if (!container) return;
+    
+    const rows = container.querySelectorAll('[data-attr-id]');
+    rows.forEach(row => {
+        const rowAttrId = parseInt(row.dataset.attrId);
+        const rowDiv = row.querySelector('div');
+        if (rowDiv) {
+            let isSelected = false;
+            for (const key of Object.keys(selectedAttrValues)) {
+                if (selectedAttrValues[key] === rowAttrId) {
+                    isSelected = true;
+                    break;
+                }
+            }
+            
+            if (isSelected) {
+                rowDiv.style.background = 'var(--accent)';
+                rowDiv.style.color = '#fff';
+                rowDiv.style.borderColor = 'var(--accent)';
+                let checkIcon = rowDiv.querySelector('.check-icon');
+                if (!checkIcon) {
+                    checkIcon = document.createElement('span');
+                    checkIcon.className = 'check-icon';
+                    checkIcon.innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+                    rowDiv.appendChild(checkIcon);
+                }
+            } else {
+                rowDiv.style.background = 'var(--white)';
+                rowDiv.style.color = 'inherit';
+                rowDiv.style.borderColor = 'var(--border)';
+                const checkIcon = rowDiv.querySelector('.check-icon');
+                if (checkIcon) checkIcon.remove();
+            }
+        }
+    });
 }
 
 // 存储已选择的属性值 { topAttrId: selectedChildId }
@@ -3054,7 +3113,7 @@ function handleItemAttrSelectDirect(attrKey, parentId, attrId) {
         selectedAttrValues[topLevelIdStr] = numAttrId;
     }
     
-    // 直接更新所有子属性行的样式，确保单选效果
+    // 直接更新当前顶级属性组内的子属性行样式，确保单选效果
     const container = document.getElementById('attributeSelector');
     if (!container) return;
     
@@ -3064,9 +3123,13 @@ function handleItemAttrSelectDirect(attrKey, parentId, attrId) {
         const rowAttrId = parseInt(row.dataset.attrId);
         // 查找该行属性所属的顶级属性
         const rowTopLevelId = findTopLevelAttrId(rowAttrId, attrTree);
-        const rowTopLevelIdStr = rowTopLevelId !== null ? String(rowTopLevelId) : null;
         
-        const isSelected = rowTopLevelIdStr !== null && selectedAttrValues[rowTopLevelIdStr] === rowAttrId;
+        // 只更新当前顶级属性组内的行，避免影响其他属性的显示状态
+        if (rowTopLevelId !== topLevelId) {
+            return;
+        }
+        
+        const isSelected = selectedAttrValues[String(rowTopLevelId)] === rowAttrId;
         const rowDiv = row.querySelector('div');
         if (rowDiv) {
             if (isSelected) {
@@ -3139,18 +3202,18 @@ async function saveItem() {
     const templateId = document.getElementById('templateSelect').value;
     if (!templateId) { showToast('请选择类别', 'error'); return false; }
     
-    // 校验属性：每个顶级属性必须选择一个二级及以下的值
+    // 校验属性：每个顶级属性必须选择一个子属性（支持三级及更深层级）
     const attrTree = window.currentAttrTree || [];
     let missingAttrs = [];
     
-    // 只检查顶级属性是否有选中的值，不递归检查子属性
     for (const topAttr of attrTree) {
         if (topAttr.children && topAttr.children.length > 0) {
-            // 检查是否选中了这个顶级属性下的某个子属性
-            const hasSelectedChild = topAttr.children.some(child => {
-                return selectedAttrValues[String(topAttr.id)] === child.id;
-            });
-            if (!hasSelectedChild) {
+            // 检查该顶级属性是否有选中的值
+            const topAttrIdStr = String(topAttr.id);
+            const selectedValue = selectedAttrValues[topAttrIdStr];
+            
+            // 如果没有选中任何值，记录缺失
+            if (selectedValue === undefined || selectedValue === null) {
                 missingAttrs.push(topAttr.name);
             }
         }
@@ -3199,16 +3262,12 @@ async function saveItemAndContinue() {
     keepAdding = false;
 }
 
-function editItem(itemId) {
+async function editItem(itemId) {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
     currentItemId = itemId;
     currentItemImages = item.images ? [item.images] : [];
     currentTemplateId = item.template_id;
-    
-    // 初始化选中的属性值
-    selectedAttrValues = {};
-    const itemAttrs = item.attributes || [];
     
     document.getElementById('itemModalTitle').textContent = '编辑物品';
     document.querySelector('#itemForm input[name="name"]').value = item.name;
@@ -3234,63 +3293,32 @@ function editItem(itemId) {
     // 隐藏图片上传输入
     document.getElementById('imageInput').style.display = 'none';
     
-    loadTemplateAttributes();
-    document.getElementById('saveAndContinueBtn').style.display = 'none';
-    // 只在列表模式下显示删除按钮，卡片模式下不显示
-    document.getElementById('itemDeleteBtn').style.display = viewMode === 'list' ? 'flex' : 'none';
-    new bootstrap.Modal(document.getElementById('itemModal')).show();
+    // 第一步：加载属性模板（会设置 window.currentAttrTree）
+    selectedAttrValues = {};
+    await loadTemplateAttributes();
     
-    // 延迟设置选中状态，等待属性树加载完成
-    setTimeout(() => {
-        // 初始化选中的属性值
-        itemAttrs.forEach(attr => {
-            // 直接使用属性的parent_id或自身ID作为顶级ID
+    // 第二步：用 findTopLevelAttrId 确保每个选中值的key是正确的顶级属性ID
+    // 这样与 handleItemAttrSelectDirect 和保存校验的key保持一致
+    const itemAttrs = item.attributes || [];
+    const attrTree = window.currentAttrTree || [];
+    itemAttrs.forEach(attr => {
+        const topLevelId = findTopLevelAttrId(attr.id, attrTree);
+        if (topLevelId !== null) {
+            selectedAttrValues[String(topLevelId)] = attr.id;
+        } else {
+            // 兜底：如果找不到顶级属性，用自身ID或parent_id
             if (attr.parent_id && attr.parent_id > 0) {
                 selectedAttrValues[String(attr.parent_id)] = attr.id;
             } else {
                 selectedAttrValues[String(attr.id)] = attr.id;
             }
-        });
-        
-        // 更新属性选择器中已选中项的样式
-        const container = document.getElementById('attributeSelector');
-        if (container) {
-            const rows = container.querySelectorAll('[data-attr-id]');
-            rows.forEach(row => {
-                const rowAttrId = parseInt(row.dataset.attrId);
-                const rowDiv = row.querySelector('div');
-                if (rowDiv) {
-                    // 检查该属性是否被选中
-                    let isSelected = false;
-                    for (const key of Object.keys(selectedAttrValues)) {
-                        if (selectedAttrValues[key] === rowAttrId) {
-                            isSelected = true;
-                            break;
-                        }
-                    }
-                    
-                    if (isSelected) {
-                        rowDiv.style.background = 'var(--accent)';
-                        rowDiv.style.color = '#fff';
-                        rowDiv.style.borderColor = 'var(--accent)';
-                        let checkIcon = rowDiv.querySelector('.check-icon');
-                        if (!checkIcon) {
-                            checkIcon = document.createElement('span');
-                            checkIcon.className = 'check-icon';
-                            checkIcon.innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
-                            rowDiv.appendChild(checkIcon);
-                        }
-                    } else {
-                        rowDiv.style.background = 'var(--white)';
-                        rowDiv.style.color = 'inherit';
-                        rowDiv.style.borderColor = 'var(--border)';
-                        const checkIcon = rowDiv.querySelector('.check-icon');
-                        if (checkIcon) checkIcon.remove();
-                    }
-                }
-            });
         }
-    }, 400);
+    });
+    
+    // 第三步：更新已选中属性的视觉样式
+    updateSelectedAttrStyles();
+    document.getElementById('saveAndContinueBtn').style.display = 'none';
+    new bootstrap.Modal(document.getElementById('itemModal')).show();
 }
 
 // 待删除的物品ID
@@ -4576,7 +4604,6 @@ function renderTemplateCurrentAttrs() {
                         ` : '<span style="width:12px;"></span>'}
                         <span style="flex:1;font-size:13px;">
                             ${isTopLevel ? '<strong>' + attr.name + '</strong>' : attr.name}
-                            ${isTopLevel ? '<span style="color:var(--accent);font-size:10px;margin-left:4px;">属性</span>' : ''}
                         </span>
                         <div style="display:flex;gap:2px;">
                             <button type="button" onclick="event.stopPropagation();startAddTemplateAttr('${id}')" title="添加子属性" style="background:none;border:none;color:var(--success);cursor:pointer;font-size:13px;padding:1px 4px;">
