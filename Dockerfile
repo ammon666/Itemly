@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制后端代码
+# 复制后端与前端代码
 COPY backend/ ./backend/
+COPY frontend/ ./frontend/
 
 # 安装Python依赖
 RUN pip install --no-cache-dir -r backend/requirements.txt

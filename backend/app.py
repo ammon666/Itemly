@@ -121,14 +121,32 @@ def create_app():
     @app.route('/<path:path>')
     def serve_frontend(path):
         if path == '' or path == 'index.html':
-            # 返回index.html作为SPA的入口
+            index_path = os.path.join(html_dir, 'index.html')
+            if not os.path.exists(index_path):
+                return (
+                    '<html><head><meta charset="utf-8"><title>Itemly</title></head>'
+                    '<body style="font-family:sans-serif;padding:40px;text-align:center;">'
+                    '<h2>前端页面未部署</h2>'
+                    '<p>请在 Dockerfile 中添加 <code>COPY frontend/ ./frontend/</code> 后重新构建镜像。</p>'
+                    '</body></html>'
+                ), 500
             return send_from_directory(html_dir, 'index.html')
         # 尝试在frontend目录中查找静态文件
         file_path = os.path.join(frontend_dir, path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return send_from_directory(frontend_dir, path)
         # 默认返回index.html
-        return send_from_directory(html_dir, 'index.html')
+        index_path = os.path.join(html_dir, 'index.html')
+        if os.path.exists(index_path):
+            return send_from_directory(html_dir, 'index.html')
+        # 前端页面未部署
+        return (
+            '<html><head><meta charset="utf-8"><title>Itemly</title></head>'
+            '<body style="font-family:sans-serif;padding:40px;text-align:center;">'
+            '<h2>前端页面未部署</h2>'
+            '<p>请在 Dockerfile 中添加 <code>COPY frontend/ ./frontend/</code> 后重新构建镜像。</p>'
+            '</body></html>'
+        ), 500
 
     # 上传图片API
     @app.route('/api/upload', methods=['POST'])
