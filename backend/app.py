@@ -3,8 +3,15 @@ Itemly Flask应用入口
 轻量化物品管理系统
 """
 import os
+import sys
 import logging
 from datetime import timedelta
+
+# 保证 gunicorn（以包方式导入 backend.app）也能找到同级模块 models/routes/utils
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
+
 from flask import Flask, send_from_directory, jsonify, request, session, g
 from flask_cors import CORS
 from models import init_db
