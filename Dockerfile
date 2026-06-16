@@ -23,8 +23,7 @@ RUN mkdir -p /data/uploads
 # 暴露端口
 EXPOSE 9009
 
-# 环境变量
-ENV FLASK_SECRET=itemly-production-secret-key-change-me
+# 环境变量（FLASK_SECRET 为敏感信息，请通过 docker run -e 或 docker-compose 运行时注入）
 ENV FLASK_DEBUG=false
 ENV PORT=9009
 ENV ITEMLY_DB_PATH=/data/itemly.db
