@@ -4,18 +4,18 @@
 #
 # 使用说明：
 #   1. 通过环境变量 IMAGE_TAG 指定要拉取的镜像标签，例如：
-#        IMAGE_TAG=sha-1730cb4   docker compose up -d
-#        IMAGE_TAG=v1.0.0        docker compose up -d
-#        IMAGE_TAG=latest        docker compose up -d
-#      若未设置，默认使用 latest
+#        IMAGE_TAG=sha-e57f3bc    docker compose up -d
+#        IMAGE_TAG=v1.0.0         docker compose up -d
+#        IMAGE_TAG=latest         docker compose up -d
+#      若未设置，默认使用 sha-e57f3bc（当前仓库中存在的 tag）
 #   2. FLASK_SECRET 为敏感信息，请改为自己的强随机密钥
 
 version: '3.8'
 
 services:
   itemly:
-    # 从 GitHub Container Registry 拉取镜像；标签通过 ${IMAGE_TAG:-latest} 动态指定
-    image: ghcr.io/ammon666/itemly:${IMAGE_TAG:-latest}
+    # 从 GitHub Container Registry 拉取镜像；标签通过 ${IMAGE_TAG:-sha-e57f3bc} 动态指定
+    image: ghcr.io/ammon666/itemly:${IMAGE_TAG:-sha-e57f3bc}
     container_name: itemly
     restart: unless-stopped
     ports:

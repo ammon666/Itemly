@@ -43,13 +43,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # 生成的 tag：
-          #   - main 分支 -> latest
+          #   - main 分支 -> main + latest
           #   - v* 标签   -> 对应版本号（例如 v1.0.0）
           #   - 任何提交  -> sha-<short sha>
           tags: |
             type=ref,event=branch
             type=ref,event=tag
             type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
