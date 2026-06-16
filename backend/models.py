@@ -16,7 +16,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from utils.validators import escape_like
 
-DATABASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'itemly.db')
+DATABASE_PATH = os.environ.get(
+    'ITEMLY_DB_PATH',
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'itemly.db')
+)
 
 logger = logging.getLogger('itemly.models')
 

@@ -17,16 +17,18 @@ COPY backend/ ./backend/
 # 安装Python依赖
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# 创建上传目录
-RUN mkdir -p /app/uploads
+# 数据目录（持久化：数据库 + 上传图片）
+RUN mkdir -p /data/uploads
 
 # 暴露端口
-EXPOSE 5000
+EXPOSE 9009
 
 # 环境变量
 ENV FLASK_SECRET=itemly-production-secret-key-change-me
 ENV FLASK_DEBUG=false
-ENV PORT=5000
+ENV PORT=9009
+ENV ITEMLY_DB_PATH=/data/itemly.db
+ENV ITEMLY_UPLOAD_DIR=/data/uploads
 
 # 启动命令
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "backend.app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:9009", "--workers", "2", "backend.app:app"]

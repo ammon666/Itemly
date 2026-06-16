@@ -73,12 +73,12 @@ if errorlevel 1 (
 
 echo [3/3] 启动服务...
 echo.
-echo   访问地址: http://localhost:5000
+echo   访问地址: http://localhost:9009
 echo   默认账号: admin / admin123
 echo   按 Ctrl+C 停止服务
 echo.
 
-set PORT=5000
+set PORT=9009
 set FLASK_DEBUG=true
 cd backend
 python app.py

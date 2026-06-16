@@ -1,31 +1,32 @@
 # Itemly Docker Compose Configuration
 # 轻量化物品管理系统
+# 数据目录：/data（挂载到命名卷 itemly_data，容器重建数据不丢失）
 
 version: '3.8'
 
 services:
   itemly:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # 从 GitHub Container Registry 拉取镜像
+    # 把 <你的GitHub用户名> 替换为实际用户名（全小写）；或直接写对应 tag
+    image: ghcr.io/<你的GitHub用户名>/itemly:latest
     container_name: itemly
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "9009:9009"
     environment:
       - FLASK_SECRET=itemly-production-secret-key-change-me
       - FLASK_DEBUG=false
-      - PORT=5000
+      - PORT=9009
+      - ITEMLY_DB_PATH=/data/itemly.db
+      - ITEMLY_UPLOAD_DIR=/data/uploads
+    # 仅挂载数据卷；代码完全来自镜像，镜像更新即生效
     volumes:
-      - itemly_data:/app/uploads
-      - itemly_db:/app
+      - itemly_data:/data
     networks:
       - itemly_network
 
 volumes:
   itemly_data:
-    driver: local
-  itemly_db:
     driver: local
 
 networks:

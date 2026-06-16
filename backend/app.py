@@ -16,7 +16,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 
 # 上传文件夹路径
-UPLOAD_FOLDER = os.path.join(PROJECT_DIR, 'uploads')
+UPLOAD_FOLDER = os.environ.get(
+    'ITEMLY_UPLOAD_DIR',
+    os.path.join(PROJECT_DIR, 'uploads')
+)
 
 # 全局日志与审计日志
 _logging_configured = False
@@ -181,6 +184,6 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 9009))
     debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     app.run(host='0.0.0.0', port=port, debug=debug)

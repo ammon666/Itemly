@@ -38,7 +38,7 @@ cd itemly
 docker-compose up -d
 
 # 访问系统
-open http://localhost:5000
+open http://localhost:9009
 ```
 
 ### 方式二：本地开发
@@ -60,7 +60,7 @@ pip install -r requirements.txt
 python app.py
 
 # 访问系统
-open http://localhost:5000
+open http://localhost:9009
 ```
 
 ## 默认账号
@@ -160,7 +160,7 @@ Itemly/
 |------|------|--------|
 | FLASK_SECRET | Flask 密钥 | random |
 | FLASK_DEBUG | 调试模式 | false |
-| PORT | 监听端口 | 5000 |
+| PORT | 监听端口 | 9009 |
 
 ## 数据存储
 
