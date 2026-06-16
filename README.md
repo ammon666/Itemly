@@ -29,25 +29,60 @@
 
 ## 快速开始
 
-### 方式一：Docker 部署（推荐）
+### 方式一：Docker 部署（推荐，无需克隆整个项目）
+
+镜像托管在 GitHub Container Registry（ghcr.io），通过 `IMAGE_TAG` 环境变量指定要拉取的标签：
+
+```bash
+# Linux / macOS
+IMAGE_TAG=sha-e57f3bc docker compose up -d
+
+# Windows PowerShell
+$env:IMAGE_TAG = "sha-e57f3bc"; docker compose up -d
+```
+
+> **支持的镜像标签**：
+> - `latest`：默认分支（main）最新构建（main 分支推送后才会生成）
+> - `sha-xxxxxxx`：具体提交对应的镜像（如 `sha-e57f3bc`，始终可用）
+> - `v*`：发布标签（如 `v1.0.0`）
+>
+> **支持的平台架构**：`linux/amd64`、`linux/arm64`（兼容常见 x86_64 主机与 ARM 类 NAS）
+
+**默认 docker-compose.yml 已预配置**，将 `IMAGE_TAG` 留空时默认使用 `sha-e57f3bc`。启动后访问：
+
+```
+http://localhost:9009
+```
+
+如果想从零开始拉取并启动：
+
+```bash
+# 1. 拉取镜像（也可跳过，docker compose 会自动拉取）
+docker pull ghcr.io/ammon666/itemly:sha-e57f3bc
+
+# 2. 只需要一个 docker-compose.yml，内容见仓库根目录
+docker compose up -d
+```
+
+### 方式二：克隆项目后部署
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/itemly.git
+git clone https://github.com/ammon666/itemly.git
 cd itemly
 
-# 启动容器
-docker-compose up -d
+# 启动容器（通过 IMAGE_TAG 指定镜像标签，留空默认 sha-e57f3bc）
+IMAGE_TAG=sha-e57f3bc docker compose up -d
 
 # 访问系统
 open http://localhost:9009
 ```
 
-### 方式二：本地开发
+### 方式三：本地开发
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/itemly.git
+git clone https://github.com/ammon666/itemly.git
 cd itemly
 
 # 创建虚拟环境
@@ -160,9 +195,11 @@ Itemly/
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| FLASK_SECRET | Flask 密钥 | random |
+| FLASK_SECRET | Flask 密钥（敏感信息，需运行时注入） | 未设置时使用随机值 |
 | FLASK_DEBUG | 调试模式 | false |
 | PORT | 监听端口 | 9009 |
+| ITEMLY_DB_PATH | 数据库文件路径 | /data/itemly.db |
+| ITEMLY_UPLOAD_DIR | 上传文件目录 | /data/uploads |
 
 ## 数据存储
 

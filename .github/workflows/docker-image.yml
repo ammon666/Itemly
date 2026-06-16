@@ -56,6 +56,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          # 同时构建多架构镜像，兼容 amd64 和 arm64 设备
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
