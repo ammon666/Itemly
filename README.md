@@ -35,20 +35,20 @@
 
 ```bash
 # Linux / macOS
-IMAGE_TAG=sha-e57f3bc docker compose up -d
+IMAGE_TAG=latest docker compose up -d
 
 # Windows PowerShell
-$env:IMAGE_TAG = "sha-e57f3bc"; docker compose up -d
+$env:IMAGE_TAG = "latest"; docker compose up -d
 ```
 
 > **支持的镜像标签**：
-> - `latest`：默认分支（main）最新构建（main 分支推送后才会生成）
-> - `sha-xxxxxxx`：具体提交对应的镜像（如 `sha-e57f3bc`，始终可用）
+> - `latest`：默认分支（main）最新构建（main 分支推送后才会生成），**docker-compose.yml 留空时默认使用**
+> - `sha-xxxxxxx`：具体提交对应的镜像（如 `sha-e57f3bc`，始终可用，用于固定到特定版本）
 > - `v*`：发布标签（如 `v1.0.0`）
 >
 > **支持的平台架构**：`linux/amd64`、`linux/arm64`（兼容常见 x86_64 主机与 ARM 类 NAS）
 
-**默认 docker-compose.yml 已预配置**，将 `IMAGE_TAG` 留空时默认使用 `sha-e57f3bc`。启动后访问：
+启动后访问：
 
 ```
 http://localhost:9009
@@ -58,11 +58,13 @@ http://localhost:9009
 
 ```bash
 # 1. 拉取镜像（也可跳过，docker compose 会自动拉取）
-docker pull ghcr.io/ammon666/itemly:sha-e57f3bc
+docker pull ghcr.io/ammon666/itemly:latest
 
 # 2. 只需要一个 docker-compose.yml，内容见仓库根目录
 docker compose up -d
 ```
+
+> ⚠️ **构建自己的镜像时**：Dockerfile 会同时复制 `backend/` 和 `frontend/` 两个目录，请务必保持仓库结构完整，否则前端页面会变成「前端页面未部署」提示页。
 
 ### 方式二：克隆项目后部署
 
@@ -71,8 +73,8 @@ docker compose up -d
 git clone https://github.com/ammon666/itemly.git
 cd itemly
 
-# 启动容器（通过 IMAGE_TAG 指定镜像标签，留空默认 sha-e57f3bc）
-IMAGE_TAG=sha-e57f3bc docker compose up -d
+# 启动容器（通过 IMAGE_TAG 指定镜像标签，留空默认 latest）
+IMAGE_TAG=latest docker compose up -d
 
 # 访问系统
 open http://localhost:9009
@@ -288,6 +290,64 @@ Itemly/
 ### 设置
 - 用户名修改
 - 密码修改
+
+## 部署排查 / 常见问题
+
+部署完以后如果遇到问题，可按以下顺序核对：
+
+### 1. 容器日志里看到 `SyntaxError: source code string cannot contain null bytes`
+
+这是 `backend/__init__.py` 文件被编辑器保存成了带 BOM 的异常编码导致的。仓库中的文件已经被修复为纯 UTF-8 空文件。如果你是 fork 出来维护自己的版本，请确保该文件是 **0 字节的纯空文件 / 不含 BOM**，并重新构建镜像推送到 ghcr.io。
+
+```bash
+# 本地验证（Linux / macOS）：应该输出 nothing
+file backend/__init__.py        # 期望：empty
+hexdump -C backend/__init__.py  # 期望：无任何输出或仅换行
+
+# Windows PowerShell 验证：长度应为 0 或仅 LF
+(Get-Item backend\__init__.py).Length
+```
+
+修复后重新推送：
+
+```bash
+git add backend/__init__.py
+git commit -m "Fix: sanitize backend/__init__.py encoding"
+git push
+# 等 CI 构建完成后，docker compose pull && docker compose up -d
+```
+
+### 2. 浏览器打开显示 `{"message":"请求的资源不存在","success":false}`
+
+这说明后端正常启动了，但前端 `frontend/html/index.html` 没有被打进镜像。请检查 Dockerfile，确认有以下两行：
+
+```dockerfile
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+```
+
+如果缺失，请补齐后重新构建镜像。
+
+### 3. 浏览器打开后显示「前端页面未部署」提示页
+
+同上，这是 `backend/app.py` 为了避免用户永远看到 JSON 404 而增加的兜底页。遇到时按第 2 条处理即可。
+
+### 4. `docker compose up -d` 提示镜像不存在 / 未授权
+
+- 确认你的 `IMAGE_TAG` 拼写正确（如 `latest`、`sha-xxxxxxx`）
+- 访问 [ghcr.io/ammon666/itemly](https://ghcr.io/ammon666/itemly) 查看当前可用标签
+
+### 5. 升级到最新镜像的标准步骤
+
+```bash
+cd itemly
+docker compose down
+docker compose pull
+docker compose up -d
+docker compose logs -f --tail=50
+```
+
+数据保存在命名卷 `itemly_data` 中，重建容器 **不会** 丢失。
 
 ## 安全建议
 
