@@ -45,6 +45,12 @@
   display: none;
 }
 
+/* 初始状态: 页面加载时隐藏两个界面, 直到 checkAuth 完成后再显示正确的界面, 防止登录页闪现 */
+body.auth-checking #loginPage,
+body.auth-checking #appContainer {
+  display: none !important;
+}
+
 /* 筛选分类组样式 */
 .filter-category-group {
   margin-bottom: 12px;
@@ -307,18 +313,21 @@ img { display: block; width: 100%; }
 .stat-lbl { font-size: 11.5px; color: var(--muted); margin-top: 2px; font-family: 'Inter', sans-serif; }
 
 /* TOOLBAR */
-.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .toolbar-title { font-size: 14px; font-weight: 600; color: var(--ink); flex-shrink: 0; }
 .toolbar-selection { font-size: 12.5px; color: var(--sub); margin-left: 8px; flex-shrink: 0; min-width: 90px; }
 .toolbar-selection b { color: var(--accent); margin: 0 2px; }
 .toolbar-spacer { flex: 1; }
 .toolbar-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .toolbar-sep { display: inline-block; width: 1px; height: 20px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
-.toolbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.toolbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; min-width: 0; overflow-x: auto; max-width: 100%; }
+.toolbar-right .chips { flex-shrink: 0; }
 
 @media (max-width: 768px) {
   .toolbar-right {
     gap: 4px;
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
   .toolbar-right .btn-primary span,
   .toolbar-right .sort-btn span {
@@ -328,6 +337,14 @@ img { display: block; width: 100%; }
   .toolbar-right .sort-btn {
     padding: 0 8px;
   }
+  .toolbar-sep { display: none; }
+  .toolbar-group { gap: 4px; }
+}
+
+@media (max-width: 560px) {
+  .main { padding: 14px 12px 64px; }
+  .toolbar { gap: 6px; }
+  .toolbar-selection { min-width: 0; }
 }
 
 /* 原批量操作条样式保留，但主页面已将按钮嵌入工具栏，此处仅作兼容（其他页面若用到） */
@@ -660,7 +677,8 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 @media (max-width:900px) {
   .sidebar { transform: translateX(-100%); box-shadow: none; }
   .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.1); }
-  .sb-overlay { display: block; }
+  .sb-overlay { display: none; }
+  .sb-overlay.show { display: block; }
   .main { margin-left: 0; padding: 16px 14px 64px; }
   .menu-toggle { display: flex; }
   .btn-primary span { display: none; }
@@ -692,7 +710,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 .app-container.active { display: block; }
 </style>
 </head>
-<body>
+<body class="auth-checking">
 
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -1430,11 +1448,13 @@ async function checkAuth() {
 }
 
 function showLogin() {
+    document.body.classList.remove('auth-checking');
     document.getElementById('loginPage').style.display = 'flex';
     document.getElementById('appContainer').classList.remove('active');
 }
 
 function showApp() {
+    document.body.classList.remove('auth-checking');
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('appContainer').classList.add('active');
 }
@@ -5083,13 +5103,11 @@ document.getElementById('navSearchInput')?.addEventListener('input', function() 
 document.getElementById('menuToggle').addEventListener('click', () => {
     const sb = document.getElementById('sidebar'), ov = document.getElementById('sbOverlay');
     const o = sb.classList.toggle('open');
-    if (o) { ov.style.opacity = '1'; ov.style.pointerEvents = 'auto'; }
-    else { ov.style.opacity = '0'; ov.style.pointerEvents = 'none'; }
+    if (o) ov.classList.add('show'); else ov.classList.remove('show');
 });
 function closeSidebar() {
     document.getElementById('sidebar').classList.remove('open');
-    const ov = document.getElementById('sbOverlay');
-    if (ov) { ov.style.opacity = '0'; ov.style.pointerEvents = 'none'; }
+    document.getElementById('sbOverlay').classList.remove('show');
 }
 
 // 表单提交处理
