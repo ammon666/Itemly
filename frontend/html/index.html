@@ -512,6 +512,31 @@ img { display: block; width: 100%; }
 /* MODALS */
 .modal-content { border-radius: var(--radius); border: 1px solid var(--border); max-width: 100%; word-break: break-word; }
 .modal-dialog { max-width: calc(100vw - 20px); margin: 1.75rem auto; }
+
+/* 内容较多的弹窗：占屏幕 2/3 */
+#itemModal .modal-dialog,
+#itemDetailModal .modal-dialog,
+#templateModal .modal-dialog,
+#batchEditModal .modal-dialog {
+  max-width: 66.6667vw; width: 66.6667vw; margin-left: auto; margin-right: auto;
+}
+
+/* 内容较少的弹窗：占屏幕 1/2 */
+#categoryModal .modal-dialog,
+#attributeModal .modal-dialog {
+  max-width: 50vw; width: 50vw; margin-left: auto; margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  #itemModal .modal-dialog,
+  #itemDetailModal .modal-dialog,
+  #templateModal .modal-dialog,
+  #batchEditModal .modal-dialog,
+  #categoryModal .modal-dialog,
+  #attributeModal .modal-dialog {
+    max-width: calc(100vw - 20px); width: calc(100vw - 20px);
+  }
+}
 .modal-header { border-bottom: 1px solid var(--border); padding: 14px 16px; flex-wrap: wrap; }
 .modal-title { font-size: 15px; font-weight: 600; color: var(--ink); word-break: break-word; }
 .modal-body { padding: 16px; }
