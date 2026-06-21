@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
 <title>Itemly — 物品管理</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -104,7 +104,8 @@ body.auth-checking #appContainer {
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface); color: var(--ink); line-height: 1.5; overflow-x: hidden; }
+html, body { max-width: 100%; overflow-x: hidden; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface); color: var(--ink); line-height: 1.5; }
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
 img { display: block; width: 100%; }
@@ -183,10 +184,12 @@ img { display: block; width: 100%; }
 /* NAV */
 .nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  width: 100%; max-width: 100vw;
   height: var(--nav-h);
   background: var(--white);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 16px; gap: 12px;
+  overflow: hidden;
 }
 .nav-logo {
   display: flex; align-items: center; gap: 8px;
@@ -199,7 +202,7 @@ img { display: block; width: 100%; }
 }
 .nav-logo-mark svg { width: 15px; height: 15px; }
 .nav-search {
-  flex: 1; max-width: 360px; margin-left: auto; position: relative;
+  flex: 1 1 auto; min-width: 0; max-width: 360px; margin-left: auto; position: relative;
 }
 .nav-search input {
   width: 100%; height: 34px; border-radius: 7px;
@@ -210,7 +213,7 @@ img { display: block; width: 100%; }
 .nav-search input:focus { border-color: var(--accent); background: var(--white); }
 .nav-search input::placeholder { color: var(--muted); }
 .nav-search-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-.nav-right { display: flex; align-items: center; gap: 8px; margin-left: 10px; }
+.nav-right { display: flex; align-items: center; gap: 8px; margin-left: 10px; flex-shrink: 0; max-width: 100%; overflow: hidden; }
 .btn-primary {
   height: 32px; padding: 0 14px; border-radius: 7px;
   background: var(--accent); color: #fff;
@@ -252,7 +255,7 @@ img { display: block; width: 100%; }
 .menu-toggle:hover { background: var(--surface); }
 
 /* LAYOUT */
-.layout { display: flex; padding-top: var(--nav-h); min-height: 100vh; }
+.layout { display: flex; padding-top: var(--nav-h); min-height: 100vh; max-width: 100vw; overflow-x: hidden; }
 
 /* SIDEBAR */
 .sidebar {
@@ -262,6 +265,9 @@ img { display: block; width: 100%; }
   overflow-y: auto; z-index: 90; transition: transform .25s ease;
   display: flex; flex-direction: column; padding: 12px 0 24px;
 }
+
+/* MAIN */
+.main { margin-left: var(--sidebar-w); flex: 1 1 auto; min-width: 0; padding: 20px 22px 64px; width: 100%; }
 .sb-section { padding: 16px 0 4px; }
 .sb-label {
   font-size: 10.5px; font-weight: 600; letter-spacing: .07em;
@@ -289,12 +295,10 @@ img { display: block; width: 100%; }
 .tree-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--border); }
 .tree-row.active .tree-dot { background: var(--accent); }
 
-/* MAIN */
-.main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; padding: 20px 22px 64px; }
-
 /* STATS */
-.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; width: 100%; max-width: 100%; overflow: hidden; }
 .stat-card {
+  min-width: 0;
   background: var(--white); border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 14px 16px;
@@ -324,6 +328,9 @@ img { display: block; width: 100%; }
 .toolbar-right .chips { flex-shrink: 0; }
 
 @media (max-width: 768px) {
+  .nav { padding: 0 10px; gap: 8px; }
+  .nav-logo { font-size: 14px; }
+  .nav-right { gap: 4px; margin-left: 6px; }
   .toolbar-right {
     gap: 4px;
     flex-wrap: wrap;
@@ -339,12 +346,16 @@ img { display: block; width: 100%; }
   }
   .toolbar-sep { display: none; }
   .toolbar-group { gap: 4px; }
+  .card-name { font-size: 12.5px; }
 }
 
 @media (max-width: 560px) {
   .main { padding: 14px 12px 64px; }
   .toolbar { gap: 6px; }
   .toolbar-selection { min-width: 0; }
+  .nav-search { margin-left: 4px; }
+  .nav-right .btn-primary { display: none; }
+  .nav-user-name { display: none; }
 }
 
 /* 原批量操作条样式保留，但主页面已将按钮嵌入工具栏，此处仅作兼容（其他页面若用到） */
@@ -379,10 +390,11 @@ img { display: block; width: 100%; }
 .sort-btn:hover { border-color: var(--accent); color: var(--ink); }
 
 /* GRID */
-.grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; width: 100%; max-width: 100%; overflow: hidden; }
 
 /* CARD */
 .card {
+  min-width: 0;
   background: var(--white); border-radius: var(--radius);
   border: 1px solid var(--border); overflow: hidden;
   cursor: pointer; position: relative;
@@ -442,10 +454,10 @@ img { display: block; width: 100%; }
 
 /* LIST VIEW */
 .list-view {
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 100%;
 }
 .list-item {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%;
   background: var(--white); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 8px 10px;
   transition: background .12s;
@@ -498,11 +510,12 @@ img { display: block; width: 100%; }
 .edit-mode .list-actions { opacity: 1; }
 
 /* MODALS */
-.modal-content { border-radius: var(--radius); border: 1px solid var(--border); }
-.modal-header { border-bottom: 1px solid var(--border); padding: 14px 16px; }
-.modal-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+.modal-content { border-radius: var(--radius); border: 1px solid var(--border); max-width: 100%; word-break: break-word; }
+.modal-dialog { max-width: calc(100vw - 20px); margin: 1.75rem auto; }
+.modal-header { border-bottom: 1px solid var(--border); padding: 14px 16px; flex-wrap: wrap; }
+.modal-title { font-size: 15px; font-weight: 600; color: var(--ink); word-break: break-word; }
 .modal-body { padding: 16px; }
-.modal-footer { border-top: 1px solid var(--border); padding: 12px 16px; gap: 8px; display: flex; align-items: center; }
+.modal-footer { border-top: 1px solid var(--border); padding: 12px 16px; gap: 8px; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .modal-footer .btn { height: 34px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; }
 .modal-footer .btn-primary { height: 34px; padding: 0 14px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; }
 .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--sub); height: 34px; padding: 0 14px; border-radius: 7px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; }
@@ -542,7 +555,9 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
 /* ATTR SELECTOR */
 .attr-selector {
-  max-height: 300px; overflow-y: auto;
+  width: 100%;
+  max-width: 100%;
+  max-height: 300px; overflow-y: auto; overflow-x: hidden;
   border: 1px solid var(--border); border-radius: 7px; padding: 8px;
   background: var(--surface);
 }
@@ -550,6 +565,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 .attr-group-header {
   font-weight: 600; padding: 8px 10px; background: var(--white);
   border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--ink);
+  word-break: break-word;
 }
 .attr-group-header.required { color: var(--danger); }
 .attr-group-items { padding-left: 12px; display: none; }
@@ -561,10 +577,12 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
 /* TREE SELECTOR */
 .tree-selector {
-  width: 100%; 
-  max-height: calc(100vh - 200px); 
-  height: calc(100vh - 200px); 
+  width: 100%;
+  max-width: 100%;
+  max-height: calc(100vh - 200px);
+  height: calc(100vh - 200px);
   overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid var(--border); border-radius: 7px; padding: 8px;
   background: var(--surface);
 }
@@ -581,6 +599,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 .admin-card {
   background: var(--white); border-radius: var(--radius);
   border: 1px solid var(--border); padding: 16px; margin-bottom: 16px;
+  width: 100%; max-width: 100%; overflow: hidden;
 }
 .admin-card-title {
   font-size: 14px; font-weight: 600; color: var(--ink);
@@ -615,12 +634,14 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 .lb-close:hover { background: rgba(255,255,255,.25); }
 
 /* TOAST */
-.toast-wrap { position: fixed; top: 66px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.toast-wrap { position: fixed; top: 66px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 6px; pointer-events: none; max-width: calc(100vw - 32px); }
 .toast {
+  max-width: 100%;
   padding: 8px 14px; border-radius: 7px;
   background: var(--ink); color: #fff;
   font-size: 12.5px; font-weight: 500;
   display: flex; align-items: center; gap: 7px;
+  word-break: break-word;
   transform: translateX(110%); transition: transform .25s ease;
   pointer-events: auto; box-shadow: 0 4px 14px rgba(0,0,0,.15);
 }
@@ -644,10 +665,10 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 .sb-overlay { display: none; position: fixed; inset: 0; z-index: 89; background: rgba(0,0,0,.3); }
 
 /* OFFCANVAS */
-.offcanvas { width: 280px; }
+.offcanvas { width: 280px; max-width: 85vw; }
 .offcanvas-header { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 .offcanvas-title { font-size: 15px; font-weight: 600; color: var(--ink); }
-.offcanvas-body { padding: 16px; }
+.offcanvas-body { padding: 16px; overflow-x: hidden; }
 
 /* TREE ROW SELECTED */
 .tree-row.selected { color: #fff; background: var(--accent); }
@@ -700,9 +721,28 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
 /* 管理页面响应式 */
 @media (max-width: 900px) {
-  #pageManagement > div[style*="grid"] {
+  #pageManagement > div[style*="grid"],
+  #pageSettings > div[style*="grid"] {
     grid-template-columns: 1fr !important;
   }
+  .admin-card { overflow: hidden; }
+  .attr-selector, .tree-selector { overflow-x: hidden; }
+  .nav-user-name { max-width: 80px; }
+}
+
+/* 小屏通用优化：防止文字/容器在极窄视口下溢出 */
+@media (max-width: 420px) {
+  .nav { padding: 0 8px; gap: 6px; }
+  .nav-logo { font-size: 13px; gap: 6px; }
+  .main { padding: 12px 8px 64px; }
+  .stats-row { gap: 4px; }
+  .stat-card { padding: 6px 8px; gap: 6px; }
+  .stat-num { font-size: 13px; }
+  .stat-lbl { font-size: 9.5px; }
+  .stat-ico { width: 24px; height: 24px; }
+  .toolbar-title { font-size: 13px; }
+  .card-name { font-size: 12px; white-space: normal; }
+  .login-card { padding: 1.25rem; margin: 0.5rem; }
 }
 
 /* App Container */
@@ -1410,7 +1450,22 @@ async function api(endpoint, options = {}) {
         if (config.body && typeof config.body === 'object') config.body = JSON.stringify(config.body);
         const response = await fetch(API_BASE + endpoint, config);
         let data;
-        try { data = await response.json(); } catch (e) { return { success: false, message: '服务器返回数据格式错误' }; }
+        try { data = await response.json(); } catch (e) {
+            if (response.status === 401) {
+                // session 失效，统一跳回登录页
+                currentUser = null;
+                showLogin();
+                showToast('登录状态已失效，请重新登录', 'error');
+                return { success: false, message: '请先登录', unauthenticated: true };
+            }
+            return { success: false, message: '服务器返回数据格式错误' };
+        }
+        if (response.status === 401 || (data && data.unauthenticated)) {
+            currentUser = null;
+            showLogin();
+            showToast(data.message || '登录状态已失效，请重新登录', 'error');
+            return { ...(data || {}), success: false, unauthenticated: true };
+        }
         return data;
     } catch (error) {
         console.error('API请求失败:', endpoint, error);

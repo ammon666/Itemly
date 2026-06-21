@@ -14,6 +14,7 @@ if _CURRENT_DIR not in sys.path:
 
 from flask import Flask, send_from_directory, jsonify, request, session, g
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from models import init_db
 from routes import auth_bp, items_bp, categories_bp, attributes_bp, stats_bp
 from utils.auth_utils import login_required
@@ -82,24 +83,73 @@ def create_app():
                 g.db = None
 
     # 配置
-    _secret = os.environ.get('FLASK_SECRET') or 'itemly-secret-key-change-in-production'
+    # SECRET_KEY：生产环境必须通过 FLASK_SECRET 环境变量注入；
+    # 未设置时自动生成临时密钥并记录警告（重启或多 worker 部署会导致已有会话失效）。
+    _secret = os.environ.get('FLASK_SECRET')
+    if not _secret:
+        import secrets
+        _secret = secrets.token_hex(32)
+        logging.getLogger('itemly.audit').warning(
+            'FLASK_SECRET 未设置，本次启动使用自动生成的临时密钥；'
+            '重启或多 worker 部署会导致已有会话失效，请在生产环境中显式设置 FLASK_SECRET。'
+        )
     app.config['SECRET_KEY'] = _secret
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)
 
-    # Session 配置
-    _is_prod = os.environ.get('FLASK_ENV', 'production') == 'production'
-    app.config['SESSION_COOKIE_SECURE'] = _is_prod
+    # Session Cookie：
+    #   - SECURE / SAMESITE 通过环境变量显式可控，避免仅依据 FLASK_ENV 的隐式判断
+    #     造成"请先登录"等难以排查的问题（HTTP 访问时浏览器不回传 Secure cookie）。
+    #   - 默认值：SECURE=false（兼容 HTTP 反向代理/局域网部署）；
+    #     SAMESITE=Lax，兼顾安全性与可用性（Strict 会导致跨站点导航/部分反向代
+    #     理场景下丢失 session）。HTTPS 部署时请显式设置 SESSION_COOKIE_SECURE=true。
+    _secure_env = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower()
+    if _secure_env in ('1', 'true', 'yes', 'on'):
+        app.config['SESSION_COOKIE_SECURE'] = True
+    elif _secure_env in ('0', 'false', 'no', 'off', 'auto'):
+        app.config['SESSION_COOKIE_SECURE'] = False
+    else:
+        app.config['SESSION_COOKIE_SECURE'] = False
+    _samesite = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
+    if str(_samesite).lower() not in ('strict', 'lax', 'none'):
+        _samesite = 'Lax'
+    app.config['SESSION_COOKIE_SAMESITE'] = _samesite
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
-    app.config['SESSION_COOKIE_NAME'] = 'itemly_session'
+    app.config['SESSION_COOKIE_NAME'] = os.environ.get(
+        'SESSION_COOKIE_NAME', 'itemly_session'
+    )
+    app.config['SESSION_COOKIE_PATH'] = '/'
+
+    # 允许反向代理通过 X-Forwarded-* 头传递真实协议/客户端 IP/主机名。
+    # 这对 Nginx 反向代理、Docker 部署后通过外网域名访问尤其关键，否则 Flask
+    # 可能误判请求协议或来源 IP，影响 session 与审计日志。
+    def _int_env(name, default):
+        try:
+            return int(os.environ.get(name, default))
+        except (TypeError, ValueError):
+            return default
+
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=_int_env('PROXY_FIX_X_FOR', 1),
+        x_proto=_int_env('PROXY_FIX_X_PROTO', 1),
+        x_host=_int_env('PROXY_FIX_X_HOST', 1),
+        x_port=_int_env('PROXY_FIX_X_PORT', 0),
+        x_prefix=_int_env('PROXY_FIX_X_PREFIX', 0),
+    )
 
     # 确保上传目录存在
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-    # 启用CORS
-    CORS(app, supports_credentials=True)
+    # 启用 CORS：同源部署下默认无需，但保留对携带凭据跨域的兼容能力。
+    # 使用显式的 origins 列表比 "*" 更安全，避免浏览器拒绝携带 cookie 的跨域请求。
+    _cors_origins = os.environ.get('CORS_ORIGINS', '')
+    if _cors_origins:
+        _origins = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+        CORS(app, supports_credentials=True, origins=_origins)
+    else:
+        CORS(app, supports_credentials=True)
 
     # 注册蓝图
     app.register_blueprint(auth_bp)
