@@ -523,7 +523,9 @@ img { display: block; width: 100%; }
 
 /* 内容较少的弹窗：占屏幕 1/2 */
 #categoryModal .modal-dialog,
-#attributeModal .modal-dialog {
+#attributeModal .modal-dialog,
+#firstSetupModal .modal-dialog,
+#forgotPasswordModal .modal-dialog {
   max-width: 50vw; width: 50vw; margin-left: auto; margin-right: auto;
 }
 
@@ -533,7 +535,9 @@ img { display: block; width: 100%; }
   #templateModal .modal-dialog,
   #batchEditModal .modal-dialog,
   #categoryModal .modal-dialog,
-  #attributeModal .modal-dialog {
+  #attributeModal .modal-dialog,
+  #firstSetupModal .modal-dialog,
+  #forgotPasswordModal .modal-dialog {
     max-width: calc(100vw - 20px); width: calc(100vw - 20px);
   }
 }
@@ -801,6 +805,9 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
         <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
       </div>
       <button type="submit" class="login-btn">登 录</button>
+      <div style="text-align:center;margin-top:12px;">
+        <a href="javascript:;" id="forgotPasswordLink" style="font-size:12px;color:var(--primary);text-decoration:none;">忘记密码？</a>
+      </div>
     </form>
   </div>
 </div>
@@ -1016,6 +1023,10 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
               <label class="form-label">用户名</label>
               <input type="text" class="form-control" id="settingsUsername" required>
             </div>
+            <div class="mb-3">
+              <label class="form-label">邮箱（找回密码用）</label>
+              <input type="email" class="form-control" id="settingsEmail" readonly style="background-color:var(--surface);">
+            </div>
             <button type="submit" class="btn-primary">保存</button>
           </form>
         </div>
@@ -1059,6 +1070,89 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
   <div id="filterContainer" class="offcanvas-body filter-body"></div>
+</div>
+
+<!-- 首次登录初始化模态框 -->
+<div class="modal" id="firstSetupModal" tabindex="-1" style="transition:none;" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">完成账号初始化</h5>
+      </div>
+      <form id="firstSetupForm">
+        <div class="modal-body">
+          <p style="color:var(--muted);font-size:12px;margin-top:-4px;margin-bottom:12px;">为保障账号安全，请填写新用户名、新密码以及邮箱。</p>
+          <div class="mb-3">
+            <label class="form-label">新用户名</label>
+            <input type="text" class="form-control" id="fsUsername" required minlength="3" maxlength="32" placeholder="不能是 admin">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">新密码</label>
+            <input type="password" class="form-control" id="fsPassword" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">确认新密码</label>
+            <input type="password" class="form-control" id="fsConfirmPassword" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">邮箱（用于找回密码）</label>
+            <input type="email" class="form-control" id="fsEmail" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 找回密码模态框 -->
+<div class="modal" id="forgotPasswordModal" tabindex="-1" style="transition:none;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fpModalTitle">找回密码 - 第 1 步：验证邮箱</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <!-- 第 1 步 -->
+      <form id="fpStep1Form">
+        <div class="modal-body" id="fpStep1Body">
+          <div class="mb-3">
+            <label class="form-label">用户名</label>
+            <input type="text" class="form-control" id="fpUsername" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">邮箱</label>
+            <input type="email" class="form-control" id="fpEmail" required>
+          </div>
+          <p id="fpHint" style="color:var(--muted);font-size:12px;margin-top:8px;">请填写你在本系统中登记的邮箱。连续输错 3 次将锁定 1 小时。</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">下一步</button>
+        </div>
+      </form>
+      <!-- 第 2 步 -->
+      <form id="fpStep2Form" style="display:none;">
+        <div class="modal-body">
+          <p style="color:var(--muted);font-size:12px;margin-top:-4px;margin-bottom:12px;">验证成功。请在 10 分钟内设置一个新密码（至少 6 位）。</p>
+          <div class="mb-3">
+            <label class="form-label">新密码</label>
+            <input type="password" class="form-control" id="fpNewPassword" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">确认新密码</label>
+            <input type="password" class="form-control" id="fpConfirmPassword" required minlength="6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="switchFpStep(1)">返回</button>
+          <button type="submit" class="btn btn-primary">重置密码</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- 添加/编辑物品模态框 -->
@@ -1547,6 +1641,10 @@ function updateNavUser(user) {
     if (nameEl) nameEl.textContent = user.username;
     const btn = document.getElementById('navUserBtn');
     if (btn) btn.title = '点击登出: ' + user.username;
+    const settingsUsername = document.getElementById('settingsUsername');
+    if (settingsUsername) settingsUsername.value = user.username || '';
+    const settingsEmail = document.getElementById('settingsEmail');
+    if (settingsEmail) settingsEmail.value = user.email || '';
 }
 
 async function login(e) {
@@ -1556,11 +1654,182 @@ async function login(e) {
     const result = await api('/auth/login', { method: 'POST', body: { username, password } });
     if (result.success) {
         currentUser = result.data;
+        document.getElementById('loginForm').reset();
+        if (result.data && result.data.need_first_setup) {
+            showFirstSetup();
+        } else {
+            showApp();
+            loadAllData();
+            updateNavUser(currentUser);
+        }
+    } else showToast(result.message, 'error');
+}
+
+// ========== 找回密码相关 ==========
+let _fpToken = '';
+
+function showForgotPassword() {
+    _fpToken = '';
+    switchFpStep(1);
+    document.getElementById('fpUsername').value = '';
+    document.getElementById('fpEmail').value = '';
+    document.getElementById('fpNewPassword').value = '';
+    document.getElementById('fpConfirmPassword').value = '';
+    document.getElementById('fpHint').textContent = '请填写你在本系统中登记的邮箱。连续输错 3 次将锁定 1 小时。';
+    document.getElementById('fpHint').style.color = 'var(--muted)';
+    const m = document.getElementById('forgotPasswordModal');
+    if (window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(m).show();
+    } else {
+        m.style.display = 'block';
+        m.classList.add('show');
+    }
+}
+
+function switchFpStep(step) {
+    const s1 = document.getElementById('fpStep1Form');
+    const s2 = document.getElementById('fpStep2Form');
+    const title = document.getElementById('fpModalTitle');
+    if (step === 1) {
+        s1.style.display = '';
+        s2.style.display = 'none';
+        title.textContent = '找回密码 - 第 1 步：验证邮箱';
+    } else {
+        s1.style.display = 'none';
+        s2.style.display = '';
+        title.textContent = '找回密码 - 第 2 步：重置密码';
+    }
+}
+
+async function onFpStep1Submit(e) {
+    e.preventDefault();
+    const username = document.getElementById('fpUsername').value.trim();
+    const email = document.getElementById('fpEmail').value.trim();
+    if (!username || !email) { showToast('请填写用户名和邮箱', 'error'); return; }
+    const result = await api('/auth/password/recover/request', { method: 'POST', body: { username, email } });
+    const hint = document.getElementById('fpHint');
+    if (result.success) {
+        _fpToken = (result.data && result.data.token) || '';
+        hint.textContent = result.message || '邮箱已验证，请在 10 分钟内设置新密码';
+        hint.style.color = 'var(--primary)';
+        switchFpStep(2);
+    } else {
+        const remain = (result.data && result.data.lock_remain_seconds) || result.lock_remain_seconds;
+        if (remain) {
+            hint.textContent = result.message + '（剩余 ' + remain + ' 秒）';
+        } else {
+            hint.textContent = result.message || '验证失败';
+        }
+        hint.style.color = 'var(--danger)';
+        showToast(result.message, 'error');
+    }
+}
+
+async function onFpStep2Submit(e) {
+    e.preventDefault();
+    const newPwd = document.getElementById('fpNewPassword').value;
+    const confirmPwd = document.getElementById('fpConfirmPassword').value;
+    if (!newPwd || newPwd.length < 6) { showToast('密码至少 6 位', 'error'); return; }
+    if (newPwd !== confirmPwd) { showToast('两次输入的密码不一致', 'error'); return; }
+    if (!_fpToken) { showToast('验证信息已丢失，请重新发起找回密码', 'error'); switchFpStep(1); return; }
+    const result = await api('/auth/password/recover/reset', {
+        method: 'POST',
+        body: { token: _fpToken, new_password: newPwd, confirm_password: confirmPwd },
+    });
+    if (result.success) {
+        _fpToken = '';
+        document.getElementById('fpUsername').value = '';
+        document.getElementById('fpEmail').value = '';
+        document.getElementById('fpNewPassword').value = '';
+        document.getElementById('fpConfirmPassword').value = '';
+        showToast('密码已重置，请使用新密码登录', 'success');
+        _closeFpModal();
+    } else {
+        showToast(result.message, 'error');
+        if (result.message && result.message.indexOf('已过期') >= 0) {
+            _fpToken = '';
+            switchFpStep(1);
+        }
+    }
+}
+
+function _closeFpModal() {
+    const m = document.getElementById('forgotPasswordModal');
+    if (window.bootstrap && bootstrap.Modal) {
+        const inst = bootstrap.Modal.getInstance(m);
+        if (inst) inst.hide();
+    } else {
+        m.style.display = 'none';
+        m.classList.remove('show');
+    }
+}
+
+// ========== 首次登录初始化 ==========
+function showFirstSetup() {
+    document.getElementById('fsUsername').value = '';
+    document.getElementById('fsPassword').value = '';
+    document.getElementById('fsConfirmPassword').value = '';
+    document.getElementById('fsEmail').value = '';
+    const m = document.getElementById('firstSetupModal');
+    if (window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(m).show();
+    } else {
+        m.style.display = 'block';
+        m.classList.add('show');
+    }
+}
+
+async function onFirstSetupSubmit(e) {
+    e.preventDefault();
+    const username = document.getElementById('fsUsername').value.trim();
+    const password = document.getElementById('fsPassword').value;
+    const confirmPassword = document.getElementById('fsConfirmPassword').value;
+    const email = document.getElementById('fsEmail').value.trim();
+    if (!username || !password || !confirmPassword || !email) {
+        showToast('请完整填写', 'error');
+        return;
+    }
+    if (username.toLowerCase() === 'admin') {
+        showToast('新用户名不能是 admin', 'error');
+        return;
+    }
+    if (password.length < 6) { showToast('密码至少 6 位', 'error'); return; }
+    if (password !== confirmPassword) { showToast('两次密码不一致', 'error'); return; }
+    const result = await api('/auth/first-setup', {
+        method: 'POST',
+        body: { username, password, confirm_password: confirmPassword, email },
+    });
+    if (result.success) {
+        showToast('初始化完成，已切换为新账号：' + username, 'success');
+        currentUser = {
+            id: currentUser && currentUser.id,
+            username,
+            display_name: username,
+            email,
+            password_changed: true,
+            initialized: true,
+            email_is_set: true,
+            need_first_setup: false,
+        };
+        updateNavUser(currentUser);
+        // 清空表单避免敏感内容残留
+        document.getElementById('fsUsername').value = '';
+        document.getElementById('fsPassword').value = '';
+        document.getElementById('fsConfirmPassword').value = '';
+        document.getElementById('fsEmail').value = '';
+        const m = document.getElementById('firstSetupModal');
+        if (window.bootstrap && bootstrap.Modal) {
+            const inst = bootstrap.Modal.getInstance(m);
+            if (inst) inst.hide();
+        } else {
+            m.style.display = 'none';
+            m.classList.remove('show');
+        }
         showApp();
         loadAllData();
-        updateNavUser(currentUser);
-        document.getElementById('loginForm').reset();
-    } else showToast(result.message, 'error');
+    } else {
+        showToast(result.message, 'error');
+    }
 }
 
 async function logout() {
@@ -5192,6 +5461,14 @@ function closeSidebar() {
 
 // 表单提交处理
 document.getElementById('loginForm').addEventListener('submit', login);
+const _fpLink = document.getElementById('forgotPasswordLink');
+if (_fpLink) _fpLink.addEventListener('click', function (e) { e.preventDefault(); showForgotPassword(); });
+const _fpStep1 = document.getElementById('fpStep1Form');
+if (_fpStep1) _fpStep1.addEventListener('submit', onFpStep1Submit);
+const _fpStep2 = document.getElementById('fpStep2Form');
+if (_fpStep2) _fpStep2.addEventListener('submit', onFpStep2Submit);
+const _fsForm = document.getElementById('firstSetupForm');
+if (_fsForm) _fsForm.addEventListener('submit', onFirstSetupSubmit);
 document.getElementById('itemForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const success = await saveItem();

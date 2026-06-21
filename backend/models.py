@@ -70,6 +70,25 @@ def get_db_columns(table_name):
 # 初始化
 # ============================================================
 
+def _migrate_users_columns(cursor):
+    """为 users 表补齐 email / password_changed / initialized 三列。
+
+    使用 PRAGMA table_info(users) 读取已有列；缺失列通过 ALTER TABLE ADD COLUMN 补齐。
+    新增列都允许 NULL 且带有默认值，不破坏现有数据：
+    - email TEXT DEFAULT ''：用于"找回密码"时的邮箱校验；
+    - password_changed INTEGER DEFAULT 0：是否已完成首次登录强制改密码；
+    - initialized INTEGER DEFAULT 0：是否已完成首次登录初始化（用户名+密码+邮箱）。
+    """
+    cursor.execute("PRAGMA table_info(users)")
+    existing = {row[1] for row in cursor.fetchall()}
+    if 'email' not in existing:
+        cursor.execute("ALTER TABLE users ADD COLUMN email TEXT DEFAULT ''")
+    if 'password_changed' not in existing:
+        cursor.execute("ALTER TABLE users ADD COLUMN password_changed INTEGER DEFAULT 0")
+    if 'initialized' not in existing:
+        cursor.execute("ALTER TABLE users ADD COLUMN initialized INTEGER DEFAULT 0")
+
+
 def _migrate_item_attributes_unique(cursor):
     """迁移 item_attributes 表以确保 UNIQUE(item_id, attribute_id) 约束存在。
 
@@ -122,9 +141,16 @@ def init_db(force_recreate=False):
                 username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 display_name TEXT,
+                email TEXT DEFAULT '',
+                password_changed INTEGER DEFAULT 0,
+                initialized INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        # 兼容旧库：如果是从早期版本升级，上面的 CREATE TABLE IF NOT EXISTS 不会重新创建，
+        # 所以通过 PRAGMA table_info + ALTER TABLE 补齐新增列。
+        _migrate_users_columns(cursor)
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS categories (
@@ -276,6 +302,98 @@ class UserModel:
             cursor = conn.cursor()
             cursor.execute('BEGIN')
             cursor.execute('UPDATE users SET username = ? WHERE id = ?', (username, user_id))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            _close_if_standalone(conn)
+        return True
+
+    @staticmethod
+    def find_by_email(email):
+        """按邮箱查找用户（大小写不敏感比较）。"""
+        if not email:
+            return None
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM users')
+            for row in cursor.fetchall():
+                row_email = (row['email'] or '').strip().lower()
+                if row_email and row_email == email.strip().lower():
+                    return dict_from_row(row)
+            return None
+        finally:
+            _close_if_standalone(conn)
+
+    @staticmethod
+    def update_email(user_id, email):
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('BEGIN')
+            cursor.execute('UPDATE users SET email = ? WHERE id = ?', (email, user_id))
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            _close_if_standalone(conn)
+        return True
+
+    @staticmethod
+    def check_initialization(user_id):
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('SELECT email, password_changed, initialized FROM users WHERE id = ?', (user_id,))
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            email = row['email'] or ''
+            return {
+                'email_is_set': bool(email.strip()),
+                'password_changed': bool(row['password_changed']),
+                'initialized': bool(row['initialized']),
+                'need_first_setup': not bool(row['initialized']) or not bool(email.strip()),
+            }
+        finally:
+            _close_if_standalone(conn)
+
+    @staticmethod
+    def first_time_setup(user_id, username, password, email):
+        """原子完成"首次登录初始化"三件事：
+        - 更新用户名
+        - 更新密码（同时把 password_changed 标记为 1）
+        - 写入邮箱
+        - 置 initialized = 1
+        """
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('BEGIN')
+            password_hash = generate_password_hash(password)
+            cursor.execute(
+                'UPDATE users SET username = ?, password_hash = ?, email = ?, password_changed = 1, initialized = 1 WHERE id = ?',
+                (username, password_hash, email, user_id),
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            _close_if_standalone(conn)
+        return True
+
+    @staticmethod
+    def mark_initialized(user_id):
+        """显式把用户标记为已完成初始化（例如"通过邮箱找回密码后"）。"""
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('BEGIN')
+            cursor.execute('UPDATE users SET password_changed = 1, initialized = 1 WHERE id = ?', (user_id,))
             conn.commit()
         except Exception:
             conn.rollback()

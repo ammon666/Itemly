@@ -71,6 +71,23 @@ def require_username(value):
     return s
 
 
+_EMAIL_RE = re.compile(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$')
+
+
+def require_email(value):
+    """校验并返回邮箱地址。不符合要求时抛出 ValueError。"""
+    if value is None:
+        raise ValueError('邮箱不能为空')
+    s = str(value).strip()
+    if not s:
+        raise ValueError('邮箱不能为空')
+    if len(s) > 200:
+        raise ValueError('邮箱长度不得超过 200 个字符')
+    if not _EMAIL_RE.match(s):
+        raise ValueError('邮箱格式不正确')
+    return s
+
+
 _LIKE_ESCAPE_RE = re.compile(r'([%_\\])')
 
 
