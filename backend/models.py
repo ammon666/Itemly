@@ -402,6 +402,27 @@ class UserModel:
             _close_if_standalone(conn)
         return True
 
+    @staticmethod
+    def reset_password(user_id, new_password):
+        """通过找回密码流程重置密码：同时更新 password_hash / password_changed / initialized。"""
+        conn = get_db()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('BEGIN')
+            password_hash = generate_password_hash(new_password)
+            cursor.execute(
+                'UPDATE users SET password_hash = ?, password_changed = 1, initialized = 1 WHERE id = ?',
+                (password_hash, user_id),
+            )
+            rows = cursor.rowcount
+            conn.commit()
+            return rows
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            _close_if_standalone(conn)
+
 
 # ============================================================
 # 类别模型

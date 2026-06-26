@@ -190,6 +190,8 @@ img { display: block; width: 100%; }
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 16px; gap: 12px;
   overflow: hidden;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 .nav-logo {
   display: flex; align-items: center; gap: 8px;
@@ -202,7 +204,7 @@ img { display: block; width: 100%; }
 }
 .nav-logo-mark svg { width: 15px; height: 15px; }
 .nav-search {
-  flex: 1 1 auto; min-width: 0; max-width: 360px; margin-left: auto; position: relative;
+  flex: 1 1 auto; min-width: 80px; max-width: 360px; margin-left: auto; position: relative;
 }
 .nav-search input {
   width: 100%; height: 34px; border-radius: 7px;
@@ -331,10 +333,17 @@ img { display: block; width: 100%; }
   .nav { padding: 0 10px; gap: 8px; }
   .nav-logo { font-size: 14px; }
   .nav-right { gap: 4px; margin-left: 6px; }
+  .nav-user-name { display: none; }
+  .toolbar { gap: 6px; }
   .toolbar-right {
     gap: 4px;
     flex-wrap: wrap;
     overflow-x: visible;
+  }
+  .toolbar-right .chips {
+    width: 100%;
+    order: 3;
+    margin-top: 4px;
   }
   .toolbar-right .btn-primary span,
   .toolbar-right .sort-btn span {
@@ -356,6 +365,13 @@ img { display: block; width: 100%; }
   .nav-search { margin-left: 4px; }
   .nav-right .btn-primary { display: none; }
   .nav-user-name { display: none; }
+  .pagination { flex-wrap: wrap; gap: 4px; }
+  .pagination-info { margin-right: 0; width: 100%; text-align: center; font-size: 11px; }
+  .pagination-size-select { font-size: 11px; padding: 0 6px; height: 26px; }
+  .pagination-btn { width: 26px; height: 26px; font-size: 11px; }
+  .list-item { flex-wrap: wrap; padding: 10px; }
+  .list-info { width: 100%; order: 3; margin-top: 8px; }
+  .list-actions { opacity: 1; }
 }
 
 /* 原批量操作条样式保留，但主页面已将按钮嵌入工具栏，此处仅作兼容（其他页面若用到） */
@@ -724,7 +740,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 
 @media (max-width:1080px) { .grid { grid-template-columns:repeat(2,1fr); } }
 
-@media (max-width:900px) {
+@media (max-width: 900px) {
   .sidebar { transform: translateX(-100%); box-shadow: none; }
   .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.1); }
   .sb-overlay { display: none; }
@@ -734,6 +750,7 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
   .btn-primary span { display: none; }
   .btn-primary { padding: 0 10px; }
   .fab { display: flex; }
+  .nav-user-name { max-width: 80px; }
 }
 
 @media (max-width:560px) {
@@ -763,15 +780,33 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
 @media (max-width: 420px) {
   .nav { padding: 0 8px; gap: 6px; }
   .nav-logo { font-size: 13px; gap: 6px; }
+  .nav-logo-mark { width: 24px; height: 24px; }
+  .nav-logo-mark svg { width: 12px; height: 12px; }
+  .nav-search { min-width: 60px; }
+  .nav-search input { font-size: 12px; padding-left: 30px; }
+  .nav-search-ico svg { width: 12px; height: 12px; }
+  .nav-user-btn { padding: 2px 6px 2px 2px; }
+  .nav-user-avatar { width: 24px; height: 24px; }
+  .nav-user-avatar .nav-avatar-text { font-size: 10px; }
+  .nav-logout-icon svg { width: 10px; height: 10px; }
   .main { padding: 12px 8px 64px; }
   .stats-row { gap: 4px; }
   .stat-card { padding: 6px 8px; gap: 6px; }
   .stat-num { font-size: 13px; }
   .stat-lbl { font-size: 9.5px; }
   .stat-ico { width: 24px; height: 24px; }
+  .stat-ico svg { width: 12px; height: 12px; }
   .toolbar-title { font-size: 13px; }
   .card-name { font-size: 12px; white-space: normal; }
   .login-card { padding: 1.25rem; margin: 0.5rem; }
+  .modal-header { padding: 10px 12px; }
+  .modal-title { font-size: 14px; }
+  .modal-body { padding: 12px; }
+  .modal-footer { padding: 10px 12px; gap: 6px; }
+  .modal-footer .btn, .modal-footer .btn-primary, .btn-secondary { height: 32px; padding: 0 10px; font-size: 12px; }
+  .chips { gap: 4px; }
+  .chip { font-size: 10.5px; padding: 2px 6px 2px 8px; }
+  .toast-wrap { right: 8px; left: 8px; max-width: none; }
 }
 
 /* App Container */

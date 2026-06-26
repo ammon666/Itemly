@@ -56,7 +56,7 @@ def login():
     user = UserModel.verify_password(username, password)
     if user:
         _login_failure[key] = (0, 0)
-        session['user_id'] = user['id']
+        session['user_id'] = int(user['id'])
         session['username'] = user['username']
         session.permanent = True
         init_status = UserModel.check_initialization(user['id']) or {}
@@ -147,12 +147,16 @@ def update_account():
     except ValueError as e:
         return jsonify({'success': False, 'message': str(e)}), 400
 
+    if username.lower() == 'admin':
+        return jsonify({'success': False, 'message': '用户名不能是 admin'}), 400
+
     existing = UserModel.find_by_username(username)
-    if existing and existing['id'] != session['user_id']:
+    if existing and int(existing['id']) != int(session['user_id']):
         return jsonify({'success': False, 'message': '用户名已被使用'}), 400
 
     UserModel.update_username(session['user_id'], username)
     session['username'] = username
+    session['user_id'] = int(session['user_id'])
     audit.info('USERNAME_CHANGED old=%s new=%s ip=%s', session.get('username'), username, _client_ip())
     return jsonify({'success': True, 'message': '账号信息已更新'})
 
@@ -191,11 +195,12 @@ def first_setup():
 
     # 用户名唯一性校验
     existing = UserModel.find_by_username(username)
-    if existing and existing['id'] != session['user_id']:
+    if existing and int(existing['id']) != int(session['user_id']):
         return jsonify({'success': False, 'message': '用户名已被使用'}), 400
 
     UserModel.first_time_setup(session['user_id'], username, password, email)
     session['username'] = username
+    session['user_id'] = int(session['user_id'])
 
     audit.info('FIRST_SETUP user_id=%s new_username=%s ip=%s', session.get('user_id'), username, _client_ip())
     return jsonify({
@@ -273,11 +278,7 @@ def recover_request():
 
 @auth_bp.route('/password/recover/reset', methods=['POST'])
 def recover_reset():
-    """找回密码第二步：使用 token 重置密码。
-    为避免分两步 UPDATE 时出现状态不一致（只更新 password_changed 却没写入 password_hash），
-    这里改为在单个事务内同时更新 password_hash / password_changed / initialized，
-    并在成功后才移除对应一次性 token。
-    """
+    """找回密码第二步：使用 token 重置密码。"""
     data = request.get_json(silent=True) or {}
     token = (data.get('token') or '').strip()
     new_password = data.get('new_password') or ''
@@ -300,17 +301,8 @@ def recover_reset():
     if not user_id:
         return jsonify({'success': False, 'message': '无效的验证信息'}), 410
 
-    conn = get_db()
     try:
-        cursor = conn.cursor()
-        cursor.execute('BEGIN')
-        password_hash = generate_password_hash(new_password)
-        cursor.execute(
-            'UPDATE users SET password_hash = ?, password_changed = 1, initialized = 1 WHERE id = ?',
-            (password_hash, user_id),
-        )
-        rows = cursor.rowcount
-        conn.commit()
+        rows = UserModel.reset_password(user_id, new_password)
         if rows == 0:
             audit.warning('RECOVER_RESET_NO_ROW user_id=%s', user_id)
             return jsonify({'success': False, 'message': '用户不存在'}), 400
@@ -318,11 +310,5 @@ def recover_reset():
         audit.info('RECOVER_RESET_OK user_id=%s ip=%s rows=%s', user_id, _client_ip(), rows)
         return jsonify({'success': True, 'message': '密码已重置，请使用新密码登录'})
     except Exception:
-        try:
-            conn.rollback()
-        except Exception:
-            pass
         audit.exception('RECOVER_RESET_ERROR user_id=%s', user_id)
         return jsonify({'success': False, 'message': '重置密码失败，请稍后重试'}), 500
-    finally:
-        _close_if_standalone(conn)
