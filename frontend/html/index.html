@@ -336,9 +336,11 @@ img { display: block; width: 100%; }
   .nav-user-name { display: none; }
   .toolbar { gap: 6px; }
   .toolbar-right {
-    gap: 4px;
+    gap: 6px;
+    row-gap: 8px;
     flex-wrap: wrap;
     overflow-x: visible;
+    justify-content: flex-end;
   }
   .toolbar-right .chips {
     width: 100%;
@@ -353,6 +355,23 @@ img { display: block; width: 100%; }
   .toolbar-right .sort-btn {
     padding: 0 8px;
   }
+  .toolbar-right #actionGroup .btn-primary span,
+  .toolbar-right #actionGroup .sort-btn span,
+  .toolbar-right #filterGroup .sort-btn span {
+    display: inline;
+  }
+  .toolbar-right #actionGroup .btn-primary,
+  .toolbar-right #actionGroup .sort-btn,
+  .toolbar-right #filterGroup .sort-btn {
+    padding: 0 10px;
+  }
+  #actionGroup,
+  #filterGroup {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #filterGroup { order: 1; }
+  #actionGroup { order: 2; }
   .toolbar-sep { display: none; }
   .toolbar-group { gap: 4px; }
   .card-name { font-size: 12.5px; }
@@ -749,6 +768,28 @@ textarea.form-control { height: auto; min-height: 80px; padding: 10px 12px; resi
   .menu-toggle { display: flex; }
   .btn-primary span { display: none; }
   .btn-primary { padding: 0 10px; }
+  .toolbar-right {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    justify-content: flex-end;
+    gap: 6px;
+    row-gap: 8px;
+  }
+  #actionGroup .btn-primary span,
+  #actionGroup .sort-btn span,
+  #filterGroup .sort-btn span {
+    display: inline;
+  }
+  #actionGroup .btn-primary,
+  #actionGroup .sort-btn,
+  #filterGroup .sort-btn {
+    padding: 0 12px;
+  }
+  #actionGroup,
+  #filterGroup {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
   .fab { display: flex; }
   .nav-user-name { max-width: 80px; }
 }
