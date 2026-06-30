@@ -164,8 +164,14 @@ def update_account():
 @auth_bp.route('/first-setup', methods=['POST'])
 @login_required
 def first_setup():
-    """首次登录初始化：要求用户填写新用户名（非 admin）+ 新密码 + 邮箱。"""
+    """首次登录初始化：要求用户填写新用户名（非 admin）+ 新密码 + 邮箱。
+    初始化流程只能触发一次，已初始化的用户调用将被拒绝。
+    """
     data = request.get_json(silent=True) or {}
+
+    init_status = UserModel.check_initialization(session['user_id']) or {}
+    if init_status.get('initialized'):
+        return jsonify({'success': False, 'message': '账号已完成初始化，无需重复操作'}), 400
 
     username = (data.get('username') or '').strip()
     password = data.get('password') or ''
